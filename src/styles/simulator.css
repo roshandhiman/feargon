@@ -1,0 +1,322 @@
+/* ====================================
+   Investment Simulator Styles
+   ==================================== */
+
+.simulator-layout {
+  display: grid;
+  grid-template-columns: 360px 1fr;
+  gap: var(--space-6);
+  min-height: calc(100vh - var(--navbar-height));
+}
+
+/* --- Input Panel --- */
+.sim-input-panel {
+  padding: var(--space-6);
+  height: fit-content;
+  position: sticky;
+  top: calc(var(--navbar-height) + var(--space-8));
+}
+
+.sim-input-panel h2 {
+  font-size: var(--text-lg);
+  font-weight: 700;
+  margin-bottom: var(--space-6);
+}
+
+.sim-field {
+  margin-bottom: var(--space-6);
+}
+
+.sim-field-label {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  margin-bottom: var(--space-3);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sim-field-value {
+  font-weight: 700;
+  color: var(--accent-cyan);
+}
+
+.sim-slider {
+  width: 100%;
+  -webkit-appearance: none;
+  appearance: none;
+  height: 6px;
+  border-radius: var(--radius-full);
+  background: rgba(255,255,255,0.08);
+  outline: none;
+  transition: all var(--transition-fast);
+}
+
+.sim-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--gradient-primary);
+  cursor: pointer;
+  box-shadow: 0 0 15px rgba(0, 212, 255, 0.3);
+  transition: transform var(--transition-fast);
+}
+
+.sim-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+}
+
+.sim-slider::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--gradient-primary);
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 0 15px rgba(0, 212, 255, 0.3);
+}
+
+/* Time Period Selector */
+.period-options {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-2);
+}
+
+.period-option {
+  padding: var(--space-3);
+  text-align: center;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.period-option:hover {
+  border-color: var(--border-hover);
+  color: var(--text-primary);
+}
+
+.period-option.active {
+  border-color: var(--accent-cyan);
+  background: rgba(0, 212, 255, 0.08);
+  color: var(--accent-cyan);
+}
+
+/* Risk Level Toggle */
+.risk-toggle {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.risk-level-btn {
+  flex: 1;
+  padding: var(--space-3);
+  text-align: center;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  color: var(--text-secondary);
+}
+
+.risk-level-btn:hover {
+  border-color: var(--border-hover);
+}
+
+.risk-level-btn.active.safe {
+  border-color: var(--accent-green);
+  background: rgba(16, 185, 129, 0.08);
+  color: var(--accent-green);
+}
+
+.risk-level-btn.active.moderate {
+  border-color: var(--accent-yellow);
+  background: rgba(245, 158, 11, 0.08);
+  color: var(--accent-yellow);
+}
+
+.risk-level-btn.active.aggressive {
+  border-color: var(--accent-red);
+  background: rgba(239, 68, 68, 0.08);
+  color: var(--accent-red);
+}
+
+.sim-run-btn {
+  width: 100%;
+  margin-top: var(--space-6);
+}
+
+/* --- Output Panel --- */
+.sim-output {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+/* Chart Area */
+.sim-chart-card {
+  padding: var(--space-6);
+}
+
+.sim-chart-card h3 {
+  font-size: var(--text-base);
+  font-weight: 600;
+  margin-bottom: var(--space-4);
+}
+
+.sim-chart-container {
+  width: 100%;
+  height: 320px;
+  position: relative;
+}
+
+.sim-chart-canvas {
+  width: 100%;
+  height: 100%;
+}
+
+/* Scenario Cards */
+.scenario-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-4);
+}
+
+.scenario-card {
+  padding: var(--space-6);
+  position: relative;
+  overflow: hidden;
+}
+
+.scenario-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+}
+
+.scenario-card.safe::before {
+  background: var(--gradient-success);
+}
+
+.scenario-card.moderate::before {
+  background: linear-gradient(90deg, var(--accent-yellow), var(--accent-cyan));
+}
+
+.scenario-card.aggressive::before {
+  background: var(--gradient-danger);
+}
+
+.scenario-label {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: var(--space-3);
+}
+
+.scenario-card.safe .scenario-label { color: var(--accent-green); }
+.scenario-card.moderate .scenario-label { color: var(--accent-yellow); }
+.scenario-card.aggressive .scenario-label { color: var(--accent-red); }
+
+.scenario-value {
+  font-size: var(--text-2xl);
+  font-weight: 800;
+  margin-bottom: var(--space-2);
+}
+
+.scenario-return {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
+/* Risk Meter */
+.risk-meter-card {
+  padding: var(--space-6);
+}
+
+.risk-meter-card h3 {
+  font-size: var(--text-base);
+  font-weight: 600;
+  margin-bottom: var(--space-5);
+}
+
+.risk-meter-bar {
+  width: 100%;
+  height: 8px;
+  background: rgba(255,255,255,0.06);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  margin-bottom: var(--space-3);
+}
+
+.risk-meter-fill {
+  height: 100%;
+  border-radius: var(--radius-full);
+  background: linear-gradient(90deg, var(--accent-green), var(--accent-yellow), var(--accent-red));
+  transition: width 800ms var(--ease-out);
+}
+
+.risk-meter-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--text-xs);
+  color: var(--text-tertiary);
+}
+
+/* AI Explanation */
+.ai-explanation-card {
+  padding: var(--space-6);
+}
+
+.ai-explanation-card h3 {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-base);
+  font-weight: 600;
+  margin-bottom: var(--space-4);
+}
+
+.ai-explanation-card h3 svg {
+  width: 18px;
+  height: 18px;
+  stroke: var(--accent-purple);
+}
+
+.ai-text-area {
+  padding: var(--space-4);
+  background: rgba(123, 97, 255, 0.05);
+  border: 1px solid rgba(123, 97, 255, 0.1);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  line-height: 1.8;
+  min-height: 100px;
+}
+
+@media (max-width: 1024px) {
+  .simulator-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .sim-input-panel {
+    position: static;
+  }
+
+  .scenario-cards {
+    grid-template-columns: 1fr;
+  }
+}
