@@ -6,8 +6,19 @@ import { createSidebar, createMobileMenuBtn } from '../components/sidebar.js';
 import { createGauge } from '../components/gauge.js';
 import { drawLineChart, generateSmoothData } from '../components/chart.js';
 import { icons, formatCurrency } from '../utils/helpers.js';
+import { getCoinPrice, getCryptoMarketData } from '../services/crypto.js';
+import { getStockPrice } from '../services/yahoo.js';
+import { registerInterval, clearPageIntervals, getCachedData, setCachedData, isCacheValid } from '../services/dataManager.js';
+
+const PAGE_NAME = 'dashboard';
+
+// Trending stocks to auto-load on dashboard
+const TRENDING_STOCKS = ['AAPL', 'TSLA', 'MSFT', 'GOOGL', 'NVDA'];
 
 export function renderDashboard(container) {
+  // Clean up any previous intervals from this page
+  clearPageIntervals(PAGE_NAME);
+
   container.innerHTML = '';
 
   // Create layout
@@ -86,14 +97,19 @@ export function renderDashboard(container) {
             </div>
           </div>
 
-          <!-- Activity -->
+          <!-- Trending Stocks -->
           <div class="activity-card glass" style="margin-top:var(--space-6);">
-            <h3>Recent Activity</h3>
-            <div class="empty-state">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
-                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
-              </svg>
-              <p>No recent activity yet. Start by exploring the market or running a simulation.</p>
+            <h3>Trending Stocks</h3>
+            <div id="trending-stocks" style="display:flex;flex-direction:column;gap:var(--space-3);margin-top:var(--space-4);">
+              <div class="loading-pulse" style="text-align:center;padding:var(--space-4);font-size:var(--text-sm);color:var(--text-tertiary);">Loading live stock data...</div>
+            </div>
+          </div>
+
+          <!-- Top Crypto -->
+          <div class="activity-card glass" style="margin-top:var(--space-6);">
+            <h3>Top Cryptocurrencies</h3>
+            <div id="top-crypto" style="display:flex;flex-direction:column;gap:var(--space-3);margin-top:var(--space-4);">
+              <div class="loading-pulse" style="text-align:center;padding:var(--space-4);font-size:var(--text-sm);color:var(--text-tertiary);">Loading live crypto data...</div>
             </div>
           </div>
         </div>
@@ -111,16 +127,16 @@ export function renderDashboard(container) {
             <h3>Market Pulse</h3>
             <div style="display:flex;flex-direction:column;gap:var(--space-3);margin-top:var(--space-2);">
               <div style="display:flex;justify-content:space-between;align-items:center;padding:var(--space-3);background:rgba(255,255,255,0.02);border-radius:var(--radius-md);">
-                <span style="font-size:var(--text-sm);font-weight:600;">S&P 500</span>
-                <span style="font-size:var(--text-sm);color:var(--accent-green);font-weight:600;">—</span>
+                <span style="font-size:var(--text-sm);font-weight:600;">AAPL</span>
+                <span style="font-size:var(--text-sm);font-weight:600;" id="pulse-aapl" class="pulse-value loading-pulse">Loading...</span>
               </div>
               <div style="display:flex;justify-content:space-between;align-items:center;padding:var(--space-3);background:rgba(255,255,255,0.02);border-radius:var(--radius-md);">
-                <span style="font-size:var(--text-sm);font-weight:600;">NASDAQ</span>
-                <span style="font-size:var(--text-sm);color:var(--accent-green);font-weight:600;">—</span>
+                <span style="font-size:var(--text-sm);font-weight:600;">TSLA</span>
+                <span style="font-size:var(--text-sm);font-weight:600;" id="pulse-tsla" class="pulse-value loading-pulse">Loading...</span>
               </div>
               <div style="display:flex;justify-content:space-between;align-items:center;padding:var(--space-3);background:rgba(255,255,255,0.02);border-radius:var(--radius-md);">
                 <span style="font-size:var(--text-sm);font-weight:600;">BTC</span>
-                <span style="font-size:var(--text-sm);color:var(--accent-red);font-weight:600;">—</span>
+                <span style="font-size:var(--text-sm);font-weight:600;" id="pulse-btc" class="pulse-value loading-pulse">Loading...</span>
               </div>
             </div>
           </div>
@@ -131,7 +147,7 @@ export function renderDashboard(container) {
               ${icons.sparkles}
               AI Insight
             </h3>
-            <div class="ai-text-area" style="margin-top:var(--space-4);">
+            <div class="ai-text-area" id="ai-insight-text" style="margin-top:var(--space-4);">
               Your portfolio is well positioned. Connect your assets and run a simulation to receive personalized AI-driven insights.
             </div>
           </div>
@@ -163,4 +179,183 @@ export function renderDashboard(container) {
       });
     }
   }, 300);
+
+  // ===== LIVE DATA INTEGRATION =====
+
+  // Helper to update a pulse element with color class
+  function updatePulseElement(id, price, changePercent) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.classList.remove('loading-pulse');
+    if (price == null) {
+      el.textContent = 'N/A';
+      return;
+    }
+    const sign = changePercent >= 0 ? '+' : '';
+    el.textContent = `${sign}${changePercent.toFixed(2)}%`;
+    el.classList.remove('positive', 'negative');
+    el.classList.add(changePercent >= 0 ? 'positive' : 'negative');
+  }
+
+  // --- Market Pulse: BTC (crypto) ---
+  async function fetchBTC() {
+    const btcData = await getCoinPrice('bitcoin');
+    if (btcData) {
+      updatePulseElement('pulse-btc', btcData.price, btcData.change24h);
+    } else {
+      const el = document.getElementById('pulse-btc');
+      if (el) { el.textContent = 'N/A'; el.classList.remove('loading-pulse'); }
+    }
+  }
+
+  // --- Market Pulse: AAPL + TSLA (Yahoo) ---
+  async function fetchPulseStocks() {
+    const [aaplData, tslaData] = await Promise.all([
+      getStockPrice('AAPL'),
+      getStockPrice('TSLA'),
+    ]);
+
+    if (aaplData) {
+      updatePulseElement('pulse-aapl', aaplData.price, aaplData.change);
+    } else {
+      const el = document.getElementById('pulse-aapl');
+      if (el) { el.textContent = 'N/A'; el.classList.remove('loading-pulse'); }
+    }
+
+    if (tslaData) {
+      updatePulseElement('pulse-tsla', tslaData.price, tslaData.change);
+    } else {
+      const el = document.getElementById('pulse-tsla');
+      if (el) { el.textContent = 'N/A'; el.classList.remove('loading-pulse'); }
+    }
+  }
+
+  // --- Portfolio Value (derived from BTC) ---
+  async function fetchPortfolio() {
+    const btcData = await getCoinPrice('bitcoin');
+    if (btcData) {
+      const portfolioVal = btcData.price * 0.5 + 15000;
+      const el = document.getElementById('portfolio-value');
+      if (el) el.textContent = formatCurrency(portfolioVal);
+
+      const changeEl = document.getElementById('portfolio-change');
+      if (changeEl) {
+        const isPositive = btcData.change24h >= 0;
+        changeEl.className = `portfolio-change ${isPositive ? 'positive' : 'negative'}`;
+        changeEl.innerHTML = `
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+            ${isPositive
+              ? '<polyline points="17 11 12 6 7 11"/><line x1="12" y1="18" x2="12" y2="6"/>'
+              : '<polyline points="7 13 12 18 17 13"/><line x1="12" y1="6" x2="12" y2="18"/>'
+            }
+          </svg>
+          <span>${btcData.change24h >= 0 ? '+' : ''}${btcData.change24h.toFixed(2)}%</span>
+        `;
+      }
+
+      // Dynamic AI insight
+      const insightEl = document.getElementById('ai-insight-text');
+      if (insightEl) {
+        if (btcData.change24h > 2) {
+          insightEl.textContent = 'Markets are showing strong bullish momentum today. Consider taking partial profits on your positions if they\'ve exceeded your target returns.';
+        } else if (btcData.change24h > 0) {
+          insightEl.textContent = 'Markets are slightly positive today. Your portfolio is well-positioned. Continue your current strategy and monitor for any significant market shifts.';
+        } else if (btcData.change24h > -2) {
+          insightEl.textContent = 'Markets are slightly down today. This is normal volatility — stay the course. Consider this a potential buying opportunity for long-term positions.';
+        } else {
+          insightEl.textContent = 'Markets are experiencing a notable dip. Review your stop-loss levels and ensure your portfolio allocation matches your risk tolerance. Avoid panic selling.';
+        }
+      }
+    }
+  }
+
+  // --- Trending Stocks Section (Yahoo) ---
+  async function fetchTrendingStocks() {
+    const container = document.getElementById('trending-stocks');
+    if (!container) return;
+
+    try {
+      const results = await Promise.all(
+        TRENDING_STOCKS.map(sym => getStockPrice(sym))
+      );
+
+      const stocks = results.filter(Boolean);
+      if (stocks.length === 0) {
+        container.innerHTML = '<p style="text-align:center;padding:var(--space-4);font-size:var(--text-sm);color:var(--text-tertiary);">Unable to fetch live stock data</p>';
+        return;
+      }
+
+      container.innerHTML = stocks.map(stock => {
+        const changeClass = stock.change >= 0 ? 'positive' : 'negative';
+        const sign = stock.change >= 0 ? '+' : '';
+        return `
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:var(--space-3);background:rgba(255,255,255,0.02);border-radius:var(--radius-md);">
+            <div style="display:flex;align-items:center;gap:var(--space-3);">
+              <span style="font-size:var(--text-sm);font-weight:700;">${stock.symbol}</span>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-size:var(--text-sm);font-weight:600;">${formatCurrency(stock.price)}</div>
+              <div class="asset-price-change ${changeClass}" style="font-size:var(--text-xs);">${sign}${stock.change.toFixed(2)}%</div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    } catch (err) {
+      container.innerHTML = '<p style="text-align:center;padding:var(--space-4);font-size:var(--text-sm);color:var(--text-tertiary);">Unable to fetch live stock data</p>';
+    }
+  }
+
+  // --- Top Crypto Section (CoinGecko) ---
+  async function fetchTopCrypto() {
+    const container = document.getElementById('top-crypto');
+    if (!container) return;
+
+    try {
+      let cryptoList;
+      if (isCacheValid('crypto')) {
+        cryptoList = getCachedData('crypto');
+      } else {
+        cryptoList = await getCryptoMarketData();
+        if (cryptoList) setCachedData('crypto', cryptoList);
+      }
+
+      if (!cryptoList || cryptoList.length === 0) {
+        container.innerHTML = '<p style="text-align:center;padding:var(--space-4);font-size:var(--text-sm);color:var(--text-tertiary);">Unable to fetch live crypto data</p>';
+        return;
+      }
+
+      container.innerHTML = cryptoList.slice(0, 6).map(coin => {
+        const changeClass = coin.change24h >= 0 ? 'positive' : 'negative';
+        const sign = coin.change24h >= 0 ? '+' : '';
+        return `
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:var(--space-3);background:rgba(255,255,255,0.02);border-radius:var(--radius-md);">
+            <div style="display:flex;align-items:center;gap:var(--space-3);">
+              <span style="font-size:var(--text-sm);font-weight:700;">${coin.symbol}</span>
+              <span style="font-size:var(--text-xs);color:var(--text-tertiary);">${coin.name}</span>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-size:var(--text-sm);font-weight:600;">${formatCurrency(coin.price)}</div>
+              <div class="asset-price-change ${changeClass}" style="font-size:var(--text-xs);">${sign}${coin.change24h.toFixed(2)}%</div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    } catch (err) {
+      container.innerHTML = '<p style="text-align:center;padding:var(--space-4);font-size:var(--text-sm);color:var(--text-tertiary);">Unable to fetch live crypto data</p>';
+    }
+  }
+
+  // ===== INITIAL DATA FETCH =====
+  fetchBTC();
+  fetchPulseStocks();
+  fetchPortfolio();
+  fetchTrendingStocks();
+  fetchTopCrypto();
+
+  // ===== REFRESH INTERVALS =====
+  registerInterval(PAGE_NAME, fetchBTC, 30_000);           // Crypto pulse every 30s
+  registerInterval(PAGE_NAME, fetchPortfolio, 30_000);      // Portfolio every 30s
+  registerInterval(PAGE_NAME, fetchTopCrypto, 30_000);      // Crypto list every 30s
+  registerInterval(PAGE_NAME, fetchPulseStocks, 60_000);    // Stock pulse every 60s
+  registerInterval(PAGE_NAME, fetchTrendingStocks, 60_000); // Trending stocks every 60s
 }

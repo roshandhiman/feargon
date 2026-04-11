@@ -618,4 +618,34 @@ button svg,
   color: #FFFFFF !important;
 }
 
+/* --- Loading Pulse Animation --- */
+@keyframes loadingPulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
+}
 
+.loading-pulse {
+  animation: loadingPulse 1.5s ease-in-out infinite;
+}
+
+/* --- Live Data Color Overrides (override global black text for change values) --- */
+.pulse-value,
+.asset-price-change,
+.perf-stat-value,
+.portfolio-change {
+  color: #000000 !important;
+}
+
+.asset-price-change.positive,
+.perf-stat-value.positive,
+.portfolio-change.positive,
+.pulse-value.positive {
+  color: #10b981 !important;
+}
+
+.asset-price-change.negative,
+.perf-stat-value.negative,
+.portfolio-change.negative,
+.pulse-value.negative {
+  color: #ef4444 !important;
+}
