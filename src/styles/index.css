@@ -5,18 +5,18 @@
 /* --- CSS Custom Properties --- */
 :root {
   /* Colors */
-  --bg-primary: #0b0f14;
-  --bg-secondary: #111820;
-  --bg-tertiary: #161d27;
-  --bg-card: rgba(255, 255, 255, 0.03);
-  --bg-card-hover: rgba(255, 255, 255, 0.06);
-  --bg-glass: rgba(255, 255, 255, 0.04);
-  --bg-glass-strong: rgba(255, 255, 255, 0.08);
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8fafc;
+  --bg-tertiary: #f1f5f9;
+  --bg-card: rgba(0, 0, 0, 0.02);
+  --bg-card-hover: rgba(0, 0, 0, 0.04);
+  --bg-glass: rgba(255, 255, 255, 0.8);
+  --bg-glass-strong: rgba(255, 255, 255, 0.95);
 
-  --text-primary: #f0f2f5;
-  --text-secondary: rgba(240, 242, 245, 0.65);
-  --text-tertiary: rgba(240, 242, 245, 0.4);
-  --text-muted: rgba(240, 242, 245, 0.25);
+  --text-primary: #000000;
+  --text-secondary: #000000;
+  --text-tertiary: #000000;
+  --text-muted: #000000;
 
   --accent-cyan: #00d4ff;
   --accent-blue: #3b82f6;
@@ -36,9 +36,9 @@
                  radial-gradient(ellipse at 50% 80%, rgba(168, 85, 247, 0.04) 0%, transparent 50%);
 
   /* Borders */
-  --border-subtle: rgba(255, 255, 255, 0.06);
-  --border-default: rgba(255, 255, 255, 0.1);
-  --border-hover: rgba(255, 255, 255, 0.15);
+  --border-subtle: rgba(0, 0, 0, 0.06);
+  --border-default: rgba(0, 0, 0, 0.1);
+  --border-hover: rgba(0, 0, 0, 0.15);
   --border-accent: rgba(0, 212, 255, 0.3);
 
   /* Shadows */
@@ -152,8 +152,11 @@ body::before {
 }
 
 a {
-  color: inherit;
+  color: #000000;
   text-decoration: none;
+}
+a:hover {
+  text-decoration: underline;
 }
 
 button {
@@ -193,12 +196,12 @@ img {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.1);
   border-radius: var(--radius-full);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(0, 0, 0, 0.2);
 }
 
 /* --- Typography Utilities --- */
@@ -276,7 +279,7 @@ h3 > svg, h4 > svg, p > svg, span > svg {
   inset: 0;
   opacity: 0;
   transition: opacity var(--transition-fast);
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.05);
 }
 
 .btn:hover::before {
@@ -306,7 +309,7 @@ h3 > svg, h4 > svg, p > svg, span > svg {
 
 .btn-secondary:hover {
   border-color: var(--border-hover);
-  background: rgba(255, 255, 255, 0.12);
+  background: rgba(0, 0, 0, 0.05);
   transform: translateY(-1px);
 }
 
@@ -462,7 +465,7 @@ h3 > svg, h4 > svg, p > svg, span > svg {
   position: relative;
   width: 52px;
   height: 28px;
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.1);
   border-radius: var(--radius-full);
   cursor: pointer;
   transition: all var(--transition-base);
@@ -531,3 +534,88 @@ h3 > svg, h4 > svg, p > svg, span > svg {
   transform: translateY(0);
   transition: opacity 400ms var(--ease-out), transform 400ms var(--ease-out);
 }
+
+/* Global Override for Black Text */
+* {
+  color: #000000 !important;
+}
+
+.text-gradient {
+  background: none !important;
+  -webkit-text-fill-color: #000000 !important;
+  color: #000000 !important;
+}
+
+/* Global Button Override for Black & White */
+button,
+.btn,
+.btn-primary,
+.btn-secondary,
+.btn-ghost,
+.market-tab,
+.period-option,
+.notification-btn,
+.tab-item,
+.auth-tab,
+.risk-option,
+.social-btn,
+.risk-level-btn,
+.chat-send-btn,
+.chat-suggestion {
+  background: #000000 !important;
+  color: #FFFFFF !important;
+  border-color: #000000 !important;
+  box-shadow: none !important;
+}
+
+button:hover,
+.btn:hover,
+.btn-primary:hover,
+.btn-secondary:hover,
+.btn-ghost:hover,
+.market-tab:hover,
+.period-option:hover,
+.notification-btn:hover,
+.tab-item:hover,
+.auth-tab:hover,
+.risk-option:hover,
+.social-btn:hover,
+.risk-level-btn:hover,
+.chat-send-btn:hover,
+.chat-suggestion:hover,
+button.active,
+.btn.active,
+.btn-primary.active,
+.btn-secondary.active,
+.btn-ghost.active,
+.market-tab.active,
+.period-option.active,
+.notification-btn.active,
+.tab-item.active,
+.auth-tab.active,
+.risk-option.active,
+.social-btn.active,
+.risk-level-btn.active,
+.chat-send-btn.active,
+.chat-suggestion.active {
+  background: #222222 !important;
+  color: #FFFFFF !important;
+  border-color: #222222 !important;
+}
+
+button svg,
+.btn svg,
+.market-tab svg,
+.period-option svg,
+.notification-btn svg,
+.tab-item svg,
+.auth-tab svg,
+.risk-option svg,
+.social-btn svg,
+.risk-level-btn svg,
+.chat-send-btn svg,
+.chat-suggestion svg {
+  color: #FFFFFF !important;
+}
+
+

@@ -236,7 +236,7 @@ export function drawSimulatorChart(canvas, options = {}) {
   let progress = 0;
 
   function drawGrid() {
-    ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+    ctx.strokeStyle = 'rgba(0,0,0,0.04)';
     ctx.lineWidth = 1;
     for (let i = 0; i <= 4; i++) {
       const y = padding.top + (chartH / 4) * i;
