@@ -1,5 +1,5 @@
 /* ====================================
-   Fearless Invest — Main Entry
+   Feargon Invest — Main Entry
    ==================================== */
 
 // Styles
@@ -24,9 +24,20 @@ import { renderMarket } from './pages/market.js';
 import { renderSimulator } from './pages/simulator.js';
 import { renderAdvisor } from './pages/advisor.js';
 import { renderAutoMode } from './pages/automode.js';
+import { renderStockDetail } from './pages/stock.js';
 
 // Clean up default Vite files
 document.querySelector('#app').innerHTML = '';
+
+function initApp() {
+  if (typeof AOS !== 'undefined') {
+    AOS.init({
+      once: false, // whether animation should happen only once - while scrolling down
+      mirror: true, // whether elements should animate out while scrolling past them
+    });
+  }
+  router.start();
+}
 
 // Register routes
 router
@@ -36,10 +47,11 @@ router
   .addRoute('/market', renderMarket)
   .addRoute('/simulator', renderSimulator)
   .addRoute('/advisor', renderAdvisor)
-  .addRoute('/automode', renderAutoMode);
+  .addRoute('/automode', renderAutoMode)
+  .addRoute('/stock', renderStockDetail);
 
 // Start router
-router.start();
+initApp();
 
 // Handle resize for charts
 window.addEventListener('resize', () => {

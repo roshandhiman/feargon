@@ -6,7 +6,8 @@ import { createSidebar, createMobileMenuBtn } from '../components/sidebar.js';
 import { drawSparkline, generateSmoothData } from '../components/chart.js';
 import { icons, formatCurrency, debounce } from '../utils/helpers.js';
 import { getCryptoMarketData } from '../services/crypto.js';
-import { searchStocks, getStockPrice } from '../services/yahoo.js';
+import { searchStocks } from '../services/yahoo.js';
+import { getMarketStockPrice } from '../services/finnhub.js';
 import { registerInterval, clearPageIntervals, getCachedData, setCachedData, isCacheValid } from '../services/dataManager.js';
 
 const PAGE_NAME = 'market';
@@ -18,6 +19,17 @@ const cryptoAssets = [
   { name: 'Cardano', symbol: 'ADA', color: '#3b82f6' },
   { name: 'Polkadot', symbol: 'DOT', color: '#ec4899' },
   { name: 'Chainlink', symbol: 'LINK', color: '#3b82f6' },
+];
+
+const stockAssets = [
+  { name: 'Apple Inc.', symbol: 'AAPL', color: '#7b61ff' },
+  { name: 'Microsoft Corp.', symbol: 'MSFT', color: '#3b82f6' },
+  { name: 'Alphabet Inc.', symbol: 'GOOGL', color: '#10b981' },
+  { name: 'Amazon.com Inc.', symbol: 'AMZN', color: '#f59e0b' },
+  { name: 'NVIDIA Corp.', symbol: 'NVDA', color: '#00d4ff' },
+  { name: 'Tesla Inc.', symbol: 'TSLA', color: '#ef4444' },
+  { name: 'Meta Platforms', symbol: 'META', color: '#3b82f6' },
+  { name: 'Netflix Inc.', symbol: 'NFLX', color: '#ef4444' },
 ];
 
 // Color palette for dynamically searched stocks
@@ -120,10 +132,10 @@ export function renderMarket(container) {
     `).join('');
   }
 
-  function renderStockCards(stocks) {
+  function renderStockCards(stocksToRender) {
     const grid = main.querySelector('#asset-grid');
 
-    if (!stocks || stocks.length === 0) {
+    if (!stocksToRender || stocksToRender.length === 0) {
       grid.innerHTML = `
         <div style="grid-column:1/-1;text-align:center;padding:3rem;color:var(--text-tertiary);">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:48px;height:48px;margin:0 auto 1rem;opacity:0.3;">
@@ -135,8 +147,8 @@ export function renderMarket(container) {
       return;
     }
 
-    grid.innerHTML = stocks.map((stock, i) => {
-      const color = STOCK_COLORS[i % STOCK_COLORS.length];
+    grid.innerHTML = stocksToRender.map((stock, i) => {
+      const color = stock.color || STOCK_COLORS[i % STOCK_COLORS.length];
       const priceText = stock.price != null ? formatCurrency(stock.price) : '—';
       const changeVal = stock.change;
       const changeText = changeVal != null
@@ -147,7 +159,7 @@ export function renderMarket(container) {
         : '';
 
       return `
-        <div class="asset-card glass hover-lift" style="animation-delay:${i * 50}ms;">
+        <a href="#/stock?symbol=${stock.symbol}" class="asset-card glass hover-lift" style="animation-delay:${i * 50}ms; text-decoration: none; color: inherit; display: flex; flex-direction: column;">
           <div class="asset-card-header">
             <div class="asset-info">
               <div class="asset-icon" style="background:${color}20; color:${color};">
@@ -164,13 +176,13 @@ export function renderMarket(container) {
             </div>
           </div>
           <canvas class="asset-sparkline" id="sparkline-stock-${stock.symbol}"></canvas>
-        </div>
+        </a>
       `;
     }).join('');
 
-    // Draw sparklines (generated, since Yahoo doesn't give sparkline data in the chart endpoint easily)
+    // Draw sparklines
     requestAnimationFrame(() => {
-      stocks.forEach(stock => {
+      stocksToRender.forEach(stock => {
         const canvas = document.getElementById(`sparkline-stock-${stock.symbol}`);
         if (canvas) {
           const data = generateSmoothData(20, 0.6);
@@ -292,12 +304,13 @@ export function renderMarket(container) {
         // Fetch price for this stock and add to displayed results
         showLoadingGrid(1);
 
-        const priceData = await getStockPrice(symbol);
+        const priceData = await getMarketStockPrice(symbol);
         const newStock = {
           symbol,
           name,
           price: priceData ? priceData.price : null,
           change: priceData ? priceData.change : null,
+          color: STOCK_COLORS[stockResults.length % STOCK_COLORS.length]
         };
 
         // Add to front of results, avoid duplicates, limit to 5
@@ -366,8 +379,31 @@ export function renderMarket(container) {
 
   // ===== INITIAL LOAD =====
 
-  // Stocks tab: show empty state with search prompt
-  renderStockCards([]);
+  // Stocks tab: show initial stockAssets
+  stockResults = [...stockAssets];
+  renderStockCards(stockResults);
+
+  // Fetch true data via Alpha Vantage demo for all stocks in list (will likely hit rate limits on demo, but we handle it)
+  stockResults.forEach(async (stock, i) => {
+    const data = await getMarketStockPrice(stock.symbol);
+    if (data) {
+      stockResults[i].price = data.price;
+      stockResults[i].change = data.change;
+      if (activeTab === 'stocks') {
+         // Update the DOM dynamically without completely redrawing to prevent graph flashing
+         const cards = main.querySelector('#asset-grid').querySelectorAll('.asset-card');
+         if (cards[i]) {
+            const priceVal = cards[i].querySelector('.asset-price-value');
+            const priceChange = cards[i].querySelector('.asset-price-change');
+            if (priceVal && priceChange) {
+                priceVal.textContent = data.price != null ? formatCurrency(data.price) : '—';
+                priceChange.textContent = data.change != null ? `${data.change >= 0 ? '+' : ''}${data.change.toFixed(2)}%` : '—';
+                priceChange.className = `asset-price-change ${data.change != null ? (data.change >= 0 ? 'positive' : 'negative') : ''}`;
+            }
+         }
+      }
+    }
+  });
 
   // Pre-fetch crypto data in background
   fetchCryptoData();

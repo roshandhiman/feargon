@@ -37,7 +37,7 @@ export function createSidebar() {
           <rect width="32" height="32" rx="8" fill="rgba(0,212,255,0.1)"/>
           <path d="M8 22V10l8 6-8 6zm8-6l8-6v12l-8-6z" fill="url(#sg)"/>
         </svg>
-        <span class="sidebar-logo-text">Fearless</span>
+        <span class="sidebar-logo-text">Feargon</span>
       </a>
       <button class="sidebar-toggle" id="sidebar-toggle">
         ${icons.chevronLeft}

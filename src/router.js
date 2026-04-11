@@ -29,8 +29,8 @@ export class Router {
   }
 
   _getPath() {
-    const hash = window.location.hash.slice(1) || '/';
-    return hash;
+    let hash = window.location.hash.slice(1) || '/';
+    return hash.split('?')[0]; // Strip query params for routing
   }
 
   async _onHashChange() {
@@ -56,6 +56,11 @@ export class Router {
       requestAnimationFrame(() => {
         this.appEl.classList.remove('page-enter');
         this.appEl.classList.add('page-active');
+        if (typeof AOS !== 'undefined') {
+          setTimeout(() => {
+             AOS.refreshHard();
+          }, 50);
+        }
       });
 
       // Scroll to top
