@@ -14,7 +14,7 @@
   left: 0;
   bottom: 0;
   width: var(--sidebar-width);
-  background: rgba(11, 15, 20, 0.9);
+  background: rgba(255, 255, 255, 0.85);
   backdrop-filter: blur(30px);
   -webkit-backdrop-filter: blur(30px);
   border-right: 1px solid var(--border-subtle);
@@ -198,9 +198,7 @@
   justify-content: space-between;
   padding: 0 var(--space-8);
   border-bottom: 1px solid var(--border-subtle);
-  background: rgba(11, 15, 20, 0.6);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  background: transparent;
   position: sticky;
   top: 0;
   z-index: var(--z-navbar);
@@ -434,6 +432,22 @@
   font-size: var(--text-base);
   font-weight: 600;
   margin-bottom: var(--space-4);
+}
+
+/* --- Top Navbar overrides (prevent global black button styles) --- */
+.top-navbar .notification-btn {
+  background: var(--bg-card) !important;
+  border: 1px solid var(--border-subtle) !important;
+  color: var(--text-secondary) !important;
+}
+
+.top-navbar .notification-btn:hover {
+  background: var(--bg-card-hover) !important;
+  color: var(--text-primary) !important;
+}
+
+.top-navbar .notification-btn svg {
+  color: var(--text-secondary) !important;
 }
 
 /* --- Responsive --- */

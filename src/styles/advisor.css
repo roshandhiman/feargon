@@ -159,7 +159,7 @@
 .chat-input-area {
   padding: var(--space-4) var(--space-6);
   border-top: 1px solid var(--border-subtle);
-  background: rgba(11, 15, 20, 0.6);
+  background: rgba(255, 255, 255, 0.8);
   backdrop-filter: blur(20px);
 }
 
@@ -280,8 +280,45 @@
 
 .chat-suggestion:hover {
   border-color: var(--accent-cyan);
-  color: var(--accent-cyan);
-  background: rgba(0, 212, 255, 0.05);
+  color: var(--accent-cyan) !important;
+  background: rgba(0, 212, 255, 0.05) !important;
+}
+
+/* --- Advisor overrides (prevent global black button styles) --- */
+.chat-suggestion {
+  background: rgba(0, 0, 0, 0.04) !important;
+  color: var(--text-secondary) !important;
+  border-color: var(--border-default) !important;
+}
+
+.chat-send-btn {
+  background: var(--gradient-primary) !important;
+  color: #fff !important;
+  border-color: transparent !important;
+}
+
+.chat-send-btn svg {
+  color: #fff !important;
+}
+
+.chat-send-btn:hover {
+  background: var(--gradient-primary) !important;
+  box-shadow: 0 0 20px rgba(0, 212, 255, 0.3) !important;
+}
+
+.sidebar-toggle {
+  background: transparent !important;
+  color: var(--text-tertiary) !important;
+  border-color: transparent !important;
+}
+
+.sidebar-toggle:hover {
+  background: rgba(0, 0, 0, 0.05) !important;
+  color: var(--text-primary) !important;
+}
+
+.sidebar-toggle svg {
+  color: var(--text-tertiary) !important;
 }
 
 @media (max-width: 768px) {
