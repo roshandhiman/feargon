@@ -22,7 +22,7 @@ export function renderLanding(container) {
             <rect width="32" height="32" rx="8" fill="rgba(0,212,255,0.1)"/>
             <path d="M8 22V10l8 6-8 6zm8-6l8-6v12l-8-6z" fill="url(#nlg)"/>
           </svg>
-          <span class="text-gradient">Fearless</span>
+          <span class="text-gradient">Feargon</span>
         </a>
         <div class="nav-links">
           <span class="nav-link" data-scroll="features">Features</span>
@@ -82,32 +82,32 @@ export function renderLanding(container) {
       <div class="container">
         <div class="reveal">
           <span class="section-label">Features</span>
-          <h2 class="section-title">Everything you need to invest <span class="text-gradient">fearlessly</span></h2>
+          <h2 class="section-title">Everything you need to invest <span class="text-gradient">Feargon</span></h2>
           <p class="section-desc">Powered by advanced AI and real-time simulations to help you make informed decisions.</p>
         </div>
-        <div class="grid grid-4 stagger-children" id="feature-cards">
-          <div class="feature-card glass hover-lift">
+        <div class="grid grid-4" id="feature-cards">
+          <div class="feature-card glass hover-lift" data-aos="fade-up" data-aos-duration="3000">
             <div class="feature-icon">
               ${icons.brain}
             </div>
             <h3>AI Advisor</h3>
             <p>Get personalized investment advice powered by machine learning that understands your goals and risk profile.</p>
           </div>
-          <div class="feature-card glass hover-lift">
+          <div class="feature-card glass hover-lift" data-aos="fade-up" data-aos-duration="3000" data-aos-delay="100">
             <div class="feature-icon">
               ${icons.shield}
             </div>
             <h3>Risk Simulator</h3>
             <p>Visualize every possible outcome before you invest. See best case, worst case, and everything in between.</p>
           </div>
-          <div class="feature-card glass hover-lift">
+          <div class="feature-card glass hover-lift" data-aos="fade-up" data-aos-duration="3000" data-aos-delay="200">
             <div class="feature-icon">
               ${icons.target}
             </div>
             <h3>Portfolio Intelligence</h3>
             <p>Smart portfolio analysis with real-time risk scoring, diversification insights, and rebalancing recommendations.</p>
           </div>
-          <div class="feature-card glass hover-lift">
+          <div class="feature-card glass hover-lift" data-aos="fade-up" data-aos-duration="3000" data-aos-delay="300">
             <div class="feature-icon">
               ${icons.timeMachine}
             </div>
@@ -231,7 +231,7 @@ export function renderLanding(container) {
     <!-- Footer -->
     <footer class="landing-footer">
       <div class="container">
-        <p>Fearless Invest — AI-powered investment confidence</p>
+        <p>Feargon Invest — AI-powered investment confidence</p>
       </div>
     </footer>
   `;

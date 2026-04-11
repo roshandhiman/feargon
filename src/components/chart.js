@@ -16,12 +16,14 @@ export function drawLineChart(canvas, options = {}) {
 
   const {
     data = generateSmoothData(60),
+    labels = null,
     lineColor = '#00d4ff',
     gradientStart = 'rgba(0, 212, 255, 0.15)',
     gradientEnd = 'rgba(0, 212, 255, 0)',
     lineWidth = 2,
     animate = true,
-    padding = { top: 10, right: 10, bottom: 10, left: 10 },
+    padding = labels ? { top: 20, right: 30, bottom: 40, left: 60 } : { top: 10, right: 10, bottom: 10, left: 10 },
+    xSteps = null,
   } = options;
 
   const w = rect.width - padding.left - padding.right;
@@ -49,6 +51,39 @@ export function drawLineChart(canvas, options = {}) {
         requestAnimationFrame(draw);
       }
       return;
+    }
+
+    // Grid and Labels
+    if (labels) {
+       ctx.fillStyle = 'rgba(0,0,0,0.6)';
+       ctx.font = '12px Inter, sans-serif';
+       
+       // Y axis scale
+       ctx.textAlign = 'right';
+       for (let i = 0; i <= 4; i++) {
+         const yVal = min + (range * i) / 4;
+         const yPos = padding.top + h - (i / 4) * h;
+         ctx.fillText(yVal.toFixed(2), padding.left - 10, yPos + 4);
+
+         ctx.beginPath();
+         ctx.moveTo(padding.left, yPos);
+         ctx.lineTo(rect.width - padding.right, yPos);
+         ctx.strokeStyle = 'rgba(0,0,0,0.05)';
+         ctx.stroke();
+       }
+
+       // X axis labels
+       ctx.textAlign = 'center';
+       const steps = xSteps || Math.min(5, labels.length);
+       if (steps > 0) {
+         for (let i = 0; i < steps; i++) {
+           const idx = steps === 1 ? 0 : Math.floor(i * (labels.length - 1) / (steps - 1));
+           if (labels[idx]) {
+             const xPos = padding.left + (idx / (data.length - 1)) * w;
+             ctx.fillText(labels[idx], xPos, rect.height - padding.bottom + 20);
+           }
+         }
+       }
     }
 
     // Gradient fill

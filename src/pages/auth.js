@@ -21,7 +21,7 @@ export function renderAuth(container) {
       <div class="auth-card glass-strong" id="auth-card">
         <div class="auth-header">
           <div class="auth-logo">
-            <span class="text-gradient">Fearless Invest</span>
+            <span class="text-gradient">Feargon Invest</span>
           </div>
         </div>
 

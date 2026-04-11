@@ -1,5 +1,5 @@
 /* ====================================
-   FEARLESS INVEST — Design System
+   FEARGON INVEST — Design System
    ==================================== */
 
 /* --- CSS Custom Properties --- */
@@ -582,7 +582,12 @@ button:hover,
 .social-btn:hover,
 .risk-level-btn:hover,
 .chat-send-btn:hover,
-.chat-suggestion:hover,
+.chat-suggestion:hover {
+  background: #222222 !important;
+  color: #FFFFFF !important;
+  border-color: #222222 !important;
+}
+
 button.active,
 .btn.active,
 .btn-primary.active,
@@ -600,7 +605,9 @@ button.active,
 .chat-suggestion.active {
   background: #222222 !important;
   color: #FFFFFF !important;
-  border-color: #222222 !important;
+  border-color: #ffffff !important;
+  outline: 2px solid #ffffff !important;
+  outline-offset: -1px;
 }
 
 button svg,
