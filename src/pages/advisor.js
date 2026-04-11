@@ -2,6 +2,7 @@
    AI Advisor Chat Page
    ==================================== */
 
+import { getBotResponse } from "../utils/gemini.js";
 import { createSidebar, createMobileMenuBtn } from '../components/sidebar.js';
 import { icons } from '../utils/helpers.js';
 
@@ -157,15 +158,14 @@ export function renderAdvisor(container) {
     // Show typing
     showTyping();
 
-    // Simulate AI response delay
-    const delay = 1000 + Math.random() * 1500;
-    await new Promise(r => setTimeout(r, delay));
-
-    removeTyping();
-
-    // Get AI response
-    const responseIndex = messageCount % aiResponses.length;
-    addMessage(aiResponses[responseIndex]);
+    try {
+      const reply = await getBotResponse(text);
+      removeTyping();
+      addMessage(reply);
+    } catch (error) {
+      removeTyping();
+      addMessage("AI is busy right now, please try again in a moment.");
+    }
   }
 
   // Send on button click
