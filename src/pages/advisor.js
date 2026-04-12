@@ -5,6 +5,7 @@
 import { getBotResponse } from "../utils/gemini.js";
 import { createSidebar, createMobileMenuBtn } from '../components/sidebar.js';
 import { icons } from '../utils/helpers.js';
+import { store } from '../utils/store.js';
 
 const suggestions = [
   'How should I start investing?',
@@ -51,40 +52,46 @@ export function renderAdvisor(container) {
       </div>
     </div>
 
-    <div class="advisor-layout">
-      <div class="chat-header">
-        <div class="chat-avatar">
-          ${icons.brain}
+    <div class="advisor-inner-layout">
+      <!-- Internal Sidebar for Chat History -->
+      <div class="chat-history-sidebar">
+        <div class="chat-history-sidebar-header">
+           <button class="new-chat-action-btn" id="new-chat">
+             ${icons.sparkles}
+             <span>New Chat</span>
+           </button>
         </div>
-        <div class="chat-header-info">
-          <h3>Investment AI</h3>
-          <div class="chat-status">
-            <span class="chat-status-dot"></span>
-            Online
-          </div>
-        </div>
-      </div>
-
-      <div class="chat-messages" id="chat-messages">
-        <!-- Welcome state -->
-        <div class="chat-welcome" id="chat-welcome">
-          <div class="chat-welcome-icon">
-            ${icons.sparkles}
-          </div>
-          <h2>Investment AI Advisor</h2>
-          <p>Ask me anything about investing, portfolio strategy, risk management, or market analysis.</p>
-          <div class="chat-suggestions" id="chat-suggestions">
-            ${suggestions.map(s => `<button class="chat-suggestion" data-suggestion="${s}">${s}</button>`).join('')}
-          </div>
+        <div class="chat-history-list" id="chat-history-list">
+          <!-- Rendered dynamically -->
         </div>
       </div>
 
-      <div class="chat-input-area">
-        <div class="chat-input-wrapper">
-          <input type="text" class="chat-input" id="chat-input" placeholder="Ask about investments, risk, or strategy..." autocomplete="off" />
-          <button class="chat-send-btn" id="chat-send">
-            ${icons.send}
-          </button>
+      <!-- Main Chat Area -->
+      <div class="chat-main-area">
+        <div class="chat-header">
+          <div class="chat-avatar">
+            ${icons.brain}
+          </div>
+          <div class="chat-header-info">
+            <h3>Investment AI</h3>
+            <div class="chat-status">
+              <span class="chat-status-dot"></span>
+              Online
+            </div>
+          </div>
+        </div>
+
+        <div class="chat-messages" id="chat-messages">
+          <!-- Welcome state or history -->
+        </div>
+
+        <div class="chat-input-area">
+          <div class="chat-input-wrapper">
+            <input type="text" class="chat-input" id="chat-input" placeholder="Ask about investments, risk, or strategy..." autocomplete="off" />
+            <button class="chat-send-btn" id="chat-send">
+              ${icons.send}
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -104,14 +111,14 @@ export function renderAdvisor(container) {
   const sendBtn = main.querySelector('#chat-send');
   const welcome = main.querySelector('#chat-welcome');
 
-  function addMessage(text, isUser = false) {
+  function addMessage(text, isUser = false, time = null) {
     // Remove welcome on first message
     if (welcome && welcome.parentNode) {
       welcome.remove();
     }
 
     const now = new Date();
-    const time = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const displayTime = time || now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
     const msg = document.createElement('div');
     msg.className = `chat-message ${isUser ? 'user' : 'ai'}`;
@@ -119,7 +126,7 @@ export function renderAdvisor(container) {
       <div class="chat-msg-avatar">${isUser ? 'U' : '✦'}</div>
       <div>
         <div class="chat-bubble">${text}</div>
-        <div class="chat-time">${time}</div>
+        <div class="chat-time">${displayTime}</div>
       </div>
     `;
 
@@ -153,6 +160,7 @@ export function renderAdvisor(container) {
     if (!text.trim()) return;
 
     addMessage(text, true);
+    store.saveChatMessage('user', text);
     chatInput.value = '';
 
     // Show typing
@@ -162,11 +170,88 @@ export function renderAdvisor(container) {
       const reply = await getBotResponse(text);
       removeTyping();
       addMessage(reply);
+      store.saveChatMessage('ai', reply);
     } catch (error) {
       removeTyping();
       addMessage("AI is busy right now, please try again in a moment.");
     }
   }
+
+  // Restore history
+  const history = store.getChatHistory();
+  if (history.length > 0) {
+    history.forEach(msg => {
+      addMessage(msg.text, msg.role === 'user', msg.time);
+    });
+  } else {
+    // Show welcome state if no message in current active chat
+    messagesContainer.innerHTML = `
+      <div class="chat-welcome" id="chat-welcome">
+        <div class="chat-welcome-icon">
+          ${icons.sparkles}
+        </div>
+        <h2>Investment AI Advisor</h2>
+        <p>Ask me anything about investing, portfolio strategy, risk management, or market analysis.</p>
+        <div class="chat-suggestions" id="chat-suggestions">
+          ${suggestions.map(s => `<button class="chat-suggestion" data-suggestion="${s}">${s}</button>`).join('')}
+        </div>
+      </div>
+    `;
+
+    // Re-bind suggestion chips for a freshly rendered welcome state
+    const suggestionBtns = messagesContainer.querySelectorAll('.chat-suggestion');
+    suggestionBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        sendMessage(btn.dataset.suggestion);
+      });
+    });
+  }
+
+  // Render Sidebar List
+  function renderSidebar() {
+    const listContainer = main.querySelector('#chat-history-list');
+    const conversations = store.getConversations();
+    const activeId = store.getActiveChatId();
+
+    listContainer.innerHTML = conversations.map(c => `
+      <div class="chat-history-item ${c.id === activeId ? 'active' : ''}" data-id="${c.id}">
+        <div class="chat-history-item-icon">${icons.advisor}</div>
+        <div class="chat-history-item-title">${c.title}</div>
+        <button class="chat-history-item-delete" data-id="${c.id}">${icons.x}</button>
+      </div>
+    `).join('');
+
+    // Selection logic
+    listContainer.querySelectorAll('.chat-history-item').forEach(item => {
+      item.addEventListener('click', (e) => {
+        if (e.target.closest('.chat-history-item-delete')) return;
+        store.setActiveChat(item.dataset.id);
+        renderAdvisor(container); // Re-render everything for simplicity
+      });
+    });
+
+    // Delete logic
+    listContainer.querySelectorAll('.chat-history-item-delete').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (confirm('Delete this conversation?')) {
+          store.deleteChat(btn.dataset.id);
+          renderAdvisor(container);
+        }
+      });
+    });
+  }
+
+  renderSidebar();
+
+  // New Chat Logic
+  const newChatBtn = main.querySelector('#new-chat');
+  newChatBtn.addEventListener('click', () => {
+    store.createNewChat();
+    renderAdvisor(container);
+  });
+
+  // Clear current chat history (Removed from UI, logic accessible via sidebar)
 
   // Send on button click
   sendBtn.addEventListener('click', () => sendMessage(chatInput.value));

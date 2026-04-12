@@ -5,7 +5,37 @@ class GlobalStore {
     this.user = null;
     this.profile = null;
     this.currency = localStorage.getItem('fearless_currency') || 'USD';
+    
+    // Multi-chat management
+    const savedConversations = localStorage.getItem('fearless_conversations');
+    const oldHistory = localStorage.getItem('fearless_chat_history');
+
+    if (savedConversations) {
+      this.conversations = JSON.parse(savedConversations);
+      this.activeChatId = localStorage.getItem('fearless_active_chat_id');
+    } else if (oldHistory) {
+      // Migrate old history to new structure
+      const messages = JSON.parse(oldHistory);
+      const initialChat = {
+        id: 'chat-' + Date.now(),
+        title: 'Initial Conversation',
+        messages: messages
+      };
+      this.conversations = [initialChat];
+      this.activeChatId = initialChat.id;
+      this.persistConversations();
+      localStorage.removeItem('fearless_chat_history');
+    } else {
+      this.conversations = [];
+      this.activeChatId = null;
+    }
+
     this.listeners = [];
+  }
+
+  persistConversations() {
+    localStorage.setItem('fearless_conversations', JSON.stringify(this.conversations));
+    localStorage.setItem('fearless_active_chat_id', this.activeChatId);
   }
 
   // Subscribe to changes
@@ -30,6 +60,79 @@ class GlobalStore {
     if (this.user) {
       supabase.from('profiles').update({ currency: newCurrency }).eq('id', this.user.id);
     }
+    this.notify();
+  }
+
+  // Chat History Management
+  getConversations() {
+    return this.conversations;
+  }
+
+  getActiveChatId() {
+    return this.activeChatId;
+  }
+
+  setActiveChat(id) {
+    this.activeChatId = id;
+    this.persistConversations();
+    this.notify();
+  }
+
+  createNewChat() {
+    const newChat = {
+      id: 'chat-' + Date.now(),
+      title: 'New Chat',
+      messages: []
+    };
+    this.conversations.unshift(newChat);
+    this.activeChatId = newChat.id;
+    this.persistConversations();
+    this.notify();
+    return newChat;
+  }
+
+  getChatHistory() {
+    const chat = this.conversations.find(c => c.id === this.activeChatId);
+    return chat ? chat.messages : [];
+  }
+
+  saveChatMessage(role, text) {
+    if (!this.activeChatId) {
+      this.createNewChat();
+    }
+    
+    const chat = this.conversations.find(c => c.id === this.activeChatId);
+    if (chat) {
+      const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      chat.messages.push({ role, text, time });
+      
+      // Update title if it's the first user message
+      if (role === 'user' && chat.title === 'New Chat') {
+        chat.title = text.length > 30 ? text.substring(0, 30) + '...' : text;
+      }
+      
+      this.persistConversations();
+      this.notify();
+    }
+  }
+
+  clearChatHistory() {
+    if (this.activeChatId) {
+      const chat = this.conversations.find(c => c.id === this.activeChatId);
+      if (chat) {
+        chat.messages = [];
+        this.persistConversations();
+        this.notify();
+      }
+    }
+  }
+
+  deleteChat(id) {
+    this.conversations = this.conversations.filter(c => c.id !== id);
+    if (this.activeChatId === id) {
+      this.activeChatId = this.conversations.length > 0 ? this.conversations[0].id : null;
+    }
+    this.persistConversations();
     this.notify();
   }
 
