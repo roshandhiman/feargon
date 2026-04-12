@@ -41,7 +41,16 @@ export function renderDashboard(container) {
         <h1 class="top-navbar-title">Dashboard</h1>
       </div>
       <div class="top-navbar-actions">
-        <button class="notification-btn" id="btn-notifications">
+        <button class="notification-btn" id="btn-notifications" style="
+  background:#0f172a;
+  color:white;
+  padding:8px;
+  border-radius:50%;
+  border:none;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+">
           ${icons.bell}
           <span class="notification-dot"></span>
         </button>
@@ -245,9 +254,9 @@ export function renderDashboard(container) {
         changeEl.innerHTML = `
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
             ${isPositive
-              ? '<polyline points="17 11 12 6 7 11"/><line x1="12" y1="18" x2="12" y2="6"/>'
-              : '<polyline points="7 13 12 18 17 13"/><line x1="12" y1="6" x2="12" y2="18"/>'
-            }
+            ? '<polyline points="17 11 12 6 7 11"/><line x1="12" y1="18" x2="12" y2="6"/>'
+            : '<polyline points="7 13 12 18 17 13"/><line x1="12" y1="6" x2="12" y2="18"/>'
+          }
           </svg>
           <span>${btcData.change24h >= 0 ? '+' : ''}${btcData.change24h.toFixed(2)}%</span>
         `;
