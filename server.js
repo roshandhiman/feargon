@@ -40,7 +40,7 @@ RULES:
 7. TONE: Maintain a professional and helpful tone like an investment advisor.`;
 
 const model = genAI.getGenerativeModel({
-    model: "gemini-1.5-flash",
+    model: "gemini-2.0-flash",
 });
 
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
