@@ -144,6 +144,7 @@ User: ${message}`
                 return res.json({ 
                   reply: "Based on the latest market analysis, I highly recommend proceeding with a well-diversified portfolio balancing growth stocks and stable bonds to hedge against current market volatility." 
                 });
+            }
             attempt++;
         }
     }
