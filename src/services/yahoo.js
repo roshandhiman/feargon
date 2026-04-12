@@ -27,7 +27,7 @@ export const searchStocks = async (query) => {
 export const getStockPrice = async (symbol) => {
     try {
         const res = await fetch(
-            `http://localhost:3000/api/proxy/yahoo?symbol=${symbol}`
+            `/api/proxy/yahoo?symbol=${symbol}`
         );
         const data = await res.json();
 

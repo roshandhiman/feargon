@@ -21,7 +21,7 @@ export const getCryptoMarketData = async () => {
 
   try {
     const res = await fetch(
-      `http://localhost:3000/api/proxy/crypto?type=market&ids=${ids}`
+      `/api/proxy/crypto?type=market&ids=${ids}`
     );
 
     if (!res.ok) {
@@ -54,7 +54,7 @@ export const getCryptoMarketData = async () => {
 export const getCryptoPrices = async (ids = ['bitcoin', 'ethereum', 'solana']) => {
   try {
     const res = await fetch(
-      `http://localhost:3000/api/proxy/crypto?type=simple&ids=${ids.join(',')}`
+      `/api/proxy/crypto?type=simple&ids=${ids.join(',')}`
     );
 
     if (!res.ok) {
