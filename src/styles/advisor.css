@@ -507,6 +507,12 @@
 }
 
 @media (max-width: 768px) {
+  .advisor-inner-layout {
+    flex-direction: column;
+  }
+  .chat-history-sidebar {
+    display: none;
+  }
   .chat-message {
     max-width: 90%;
   }
