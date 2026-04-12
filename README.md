@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="https://raw.githubusercontent.com/roshandhiman/investingfear/main/logo.png" alt="Fearless Invest Logo" width="150" height="auto" style="border-radius:20%" onerror="this.style.display='none'"/>
+  <img src="public/feargon.jpeg" alt="Feargon Logo" width="150" style="border-radius:20%" />
   
   <br/>
   <h1>🚀 Fearless Invest</h1>
