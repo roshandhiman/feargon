@@ -506,7 +506,7 @@
   color: var(--text-tertiary) !important;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 600px) {
   .advisor-inner-layout {
     flex-direction: column;
   }
