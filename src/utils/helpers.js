@@ -26,16 +26,36 @@ export function createElement(tag, options = {}) {
   return el;
 }
 
+import { store } from './store.js';
+
 /**
- * Format currency
+ * Currency conversion mapping
  */
-export function formatCurrency(amount, currency = 'USD') {
+const currencyRates = {
+  USD: 1,
+  INR: 83,
+  EUR: 0.9,
+};
+
+export function convertPrice(priceUSD, targetCurrency) {
+  if (!priceUSD) return priceUSD;
+  const rate = currencyRates[targetCurrency] || 1;
+  return priceUSD * rate;
+}
+
+/**
+ * Format currency using dynamic global state scaling
+ */
+export function formatCurrency(amountUSD, overrideCurrency = null) {
+  const currency = overrideCurrency || store.getGlobalCurrency();
+  const convertedAmount = convertPrice(amountUSD, currency);
+  
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
-    currency,
+    currency: currency,
     minimumFractionDigits: 0,
     maximumFractionDigits: 2,
-  }).format(amount);
+  }).format(convertedAmount);
 }
 
 /**
