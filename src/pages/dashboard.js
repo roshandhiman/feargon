@@ -172,9 +172,7 @@ export function renderDashboard(container) {
   const mobileSlot = main.querySelector('#mobile-menu-slot');
   mobileSlot.appendChild(createMobileMenuBtn());
 
-  // Render gauge
-  const gaugeContainer = main.querySelector('#gauge-container');
-  gaugeContainer.appendChild(createGauge({ value: 72, label: 'Confidence Score' }));
+  // Render gauge initially handled asynchronously inside fetchPortfolio()
 
   // Animate portfolio chart
   setTimeout(() => {
@@ -274,6 +272,21 @@ export function renderDashboard(container) {
         } else {
           insightEl.textContent = 'Markets are experiencing a notable dip. Review your stop-loss levels and ensure your portfolio allocation matches your risk tolerance. Avoid panic selling.';
         }
+      }
+      
+      // Dynamic Confidence Score
+      const gaugeContainer = document.getElementById('gauge-container');
+      if (gaugeContainer) {
+        // Base market score plus volatility multiplier
+        let baseScore = 65; 
+        if (btcData.change24h >= 0) baseScore += (btcData.change24h * 4); // positive pushes up
+        else baseScore += (btcData.change24h * 3); // negative pulls down
+
+        // Clamp between 15 and 95
+        let finalScore = Math.min(Math.max(Math.round(baseScore), 15), 95);
+        
+        gaugeContainer.innerHTML = '';
+        gaugeContainer.appendChild(createGauge({ value: finalScore, label: 'Confidence Score' }));
       }
     }
   }

@@ -61,6 +61,18 @@ export class Router {
       // Clear and render
       this.appEl.innerHTML = '';
       await handler(this.appEl);
+      
+      // Global avatar syncing after layout load
+      const avatarKey = localStorage.getItem('fearless_profile_avatar');
+      const nameFallback = store.profile?.name || store.user?.user_metadata?.name || 'U';
+      const globalAvatarHtml = avatarKey 
+         ? `<img src="${avatarKey}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;" />` 
+         : nameFallback.charAt(0).toUpperCase();
+      
+      document.querySelectorAll('.user-avatar').forEach(el => {
+         el.innerHTML = globalAvatarHtml;
+         el.style.overflow = 'hidden';
+      });
 
       // Page enter animation
       requestAnimationFrame(() => {

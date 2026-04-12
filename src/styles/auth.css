@@ -126,7 +126,7 @@
 
 .form-input {
   width: 100%;
-  padding: var(--space-4) var(--space-4) var(--space-2);
+  padding: 26px var(--space-4) 10px;
   background: rgba(0,0,0,0.04);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);

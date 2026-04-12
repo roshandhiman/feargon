@@ -35,6 +35,8 @@ export function renderAdvisor(container) {
   main.className = 'main-content';
   main.style.display = 'flex';
   main.style.flexDirection = 'column';
+  main.style.height = '100vh';
+  main.style.overflow = 'hidden';
 
   main.innerHTML = `
     <div class="top-navbar">

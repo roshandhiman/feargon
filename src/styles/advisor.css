@@ -9,7 +9,9 @@
 
 .advisor-inner-layout {
   display: flex;
-  height: 100%;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
   width: 100%;
 }
 
@@ -33,10 +35,10 @@
 .new-chat-action-btn {
   width: 100%;
   padding: var(--space-4);
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(0, 212, 255, 0.2);
+  background: rgba(255, 255, 255, 0.1) !important;
+  border: 1px solid rgba(0, 212, 255, 0.2) !important;
   border-radius: var(--radius-lg);
-  color: var(--accent-cyan);
+  color: var(--accent-cyan) !important;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -56,7 +58,7 @@
 .new-chat-action-btn svg {
   width: 18px;
   height: 18px;
-  stroke: var(--accent-cyan);
+  stroke: var(--accent-cyan) !important;
 }
 
 .new-chat-action-btn span {
