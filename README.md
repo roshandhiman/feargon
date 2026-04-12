@@ -80,7 +80,11 @@ You can spin up the full platform in under 2 minutes.
    ```
 
 3. **Configure Environment Variables**
-   Create a `.env` file in the root directory:
+   Copy the provided `env.example` file to create a `.env` file in the root directory. You can do this by running:
+   ```bash
+   cp env.example .env
+   ```
+   Then open `.env` and fill in your actual keys:
    ```env
    # Your Supabase Keys
    VITE_SUPABASE_URL=your_supabase_project_url
