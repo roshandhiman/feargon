@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="public/feargon.jpeg" alt="Feargon Logo" width="150" style="border-radius:20%" />
+  <img src="public/feargon.jpeg" alt="Feargon Logo" width="150" style="border-radius:10%" />
   
   <br/>
   <h1>🚀 Fearless Invest</h1>
