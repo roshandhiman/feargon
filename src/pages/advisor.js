@@ -251,13 +251,7 @@ export function renderAdvisor(container) {
     renderAdvisor(container);
   });
 
-  // Clear current chat history
-  const clearBtn = main.querySelector('#clear-history');
-  clearBtn.addEventListener('click', () => {
-    console.log('[Advisor] Clearing current chat history...');
-    store.clearChatHistory();
-    renderAdvisor(container);
-  });
+  // Clear current chat history (Removed from UI, logic accessible via sidebar)
 
   // Send on button click
   sendBtn.addEventListener('click', () => sendMessage(chatInput.value));
