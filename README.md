@@ -59,7 +59,7 @@ This project was engineered for blazing speed, eliminating the overhead of bloat
 
 ## 🛠️ How to Run Locally
 
-You can spin up the full platform in under 2 minutes.
+You can spin up the full platform within 2 minutes.
 
 ### Prerequisites
 - Node.js (v18+)
