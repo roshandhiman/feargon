@@ -23,7 +23,7 @@ app.use(cors());
 app.use(express.json());
 
 // Load key after environment is heavily guaranteed
-const apiKey = process.env.GEMINI_API_KEY || 'REDACTED_API_KEY';
+const apiKey = process.env.GEMINI_API_KEY;
 const genAI = new GoogleGenerativeAI(apiKey);
 
 const systemInstruction = `You are a professional investment advisor for Fearless Investment.
