@@ -251,6 +251,7 @@
 .steps-flow {
   display: flex;
   align-items: flex-start;
+  justify-content: center;
   gap: var(--space-1);
   overflow-x: auto;
   padding: var(--space-4) 0;

@@ -45,6 +45,11 @@ export function renderAutoMode(container) {
     </div>
 
     <div class="dashboard-content">
+      <div class="glass" style="margin-bottom: var(--space-6); padding: var(--space-4); border-left: 4px solid var(--accent-yellow); background: rgba(245, 158, 11, 0.1);">
+        <p style="color: var(--accent-yellow); font-weight: 600; font-size: var(--text-sm);">
+          ⚠️ Beta Environment: This is a demo version. Complete real-world bridging will be shipped soon!
+        </p>
+      </div>
       <!-- AI Toggle -->
       <div class="auto-toggle-card glass" id="auto-toggle-card">
         <div class="auto-toggle-info">

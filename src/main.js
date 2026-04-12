@@ -75,4 +75,10 @@ document.addEventListener('click', (e) => {
   if (e.target.closest('.user-profile')) {
     window.location.hash = '/profile';
   }
+  
+  if (e.target.closest('.notification-btn') && !e.target.closest('#mobile-menu-btn')) {
+    import('./components/toast.js').then(({ showToast }) => {
+      showToast('You have no new notifications right now.', { type: 'info' });
+    });
+  }
 });

@@ -14,7 +14,7 @@ const navItems = [
 ];
 
 const bottomItems = [
-  { id: 'settings', label: 'Settings', icon: 'settings', path: '/settings' },
+  { id: 'settings', label: 'Settings', icon: 'settings', path: '/profile' },
 ];
 
 export function createSidebar() {
@@ -27,16 +27,7 @@ export function createSidebar() {
   sidebar.innerHTML = `
     <div class="sidebar-header">
       <a href="#/" class="sidebar-logo">
-        <svg class="sidebar-logo-icon" viewBox="0 0 32 32">
-          <defs>
-            <linearGradient id="sg" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stop-color="#00d4ff"/>
-              <stop offset="100%" stop-color="#7b61ff"/>
-            </linearGradient>
-          </defs>
-          <rect width="32" height="32" rx="8" fill="rgba(0,212,255,0.1)"/>
-          <path d="M8 22V10l8 6-8 6zm8-6l8-6v12l-8-6z" fill="url(#sg)"/>
-        </svg>
+        <img src="/logo.jpeg" alt="Fearless Invest Logo" class="sidebar-logo-icon" style="border-radius: 8px; object-fit: cover;" />
         <span class="sidebar-logo-text">Feargon</span>
       </a>
       <button class="sidebar-toggle" id="sidebar-toggle">
