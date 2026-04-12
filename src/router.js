@@ -2,6 +2,8 @@
    SPA Router — Hash-based
    ==================================== */
 
+import { store } from './utils/store.js';
+
 export class Router {
   constructor() {
     this.routes = {};
@@ -37,6 +39,14 @@ export class Router {
     const path = this._getPath();
 
     if (path === this.currentRoute) return;
+
+    // Optional Auth redirection protecting non-public paths
+    const publicPaths = ['/', '/auth'];
+    if (!publicPaths.includes(path) && !store.user) {
+      window.location.hash = '/auth';
+      return;
+    }
+
     this.currentRoute = path;
 
     const handler = this.routes[path] || this.routes['/'];

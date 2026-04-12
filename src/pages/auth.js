@@ -4,6 +4,7 @@
 
 import { showToast } from '../components/toast.js';
 import { icons } from '../utils/helpers.js';
+import { supabase } from '../utils/supabase.js';
 
 export function renderAuth(container) {
   container.innerHTML = `
@@ -125,19 +126,58 @@ export function renderAuth(container) {
   });
 
   // === Form submission ===
-  loginForm.addEventListener('submit', (e) => {
+  loginForm.addEventListener('submit', async (e) => {
     e.preventDefault();
-    showToast('Welcome back!', { type: 'success' });
-    setTimeout(() => {
-      window.location.hash = '/dashboard';
-    }, 500);
+    const btn = document.getElementById('login-submit');
+    const email = document.getElementById('login-email').value;
+    const password = document.getElementById('login-password').value;
+    
+    btn.disabled = true;
+    btn.textContent = 'Logging in...';
+    
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    
+    btn.disabled = false;
+    btn.textContent = 'Log In';
+
+    if (error) {
+      showToast(error.message, { type: 'error' });
+    } else {
+      showToast('Welcome back!', { type: 'success' });
+      setTimeout(() => {
+        window.location.hash = '/dashboard';
+      }, 500);
+    }
   });
 
-  signupForm.addEventListener('submit', (e) => {
+  signupForm.addEventListener('submit', async (e) => {
     e.preventDefault();
-    showToast('Account created successfully!', { type: 'success' });
-    setTimeout(() => {
-      window.location.hash = '/dashboard';
-    }, 500);
+    const btn = document.getElementById('signup-submit');
+    const name = document.getElementById('signup-name').value;
+    const email = document.getElementById('signup-email').value;
+    const password = document.getElementById('signup-password').value;
+    
+    btn.disabled = true;
+    btn.textContent = 'Creating...';
+    
+    const { error } = await supabase.auth.signUp({ 
+      email, 
+      password,
+      options: {
+        data: { name }
+      }
+    });
+
+    btn.disabled = false;
+    btn.textContent = 'Create Account';
+
+    if (error) {
+      showToast(error.message, { type: 'error' });
+    } else {
+      showToast('Account created successfully!', { type: 'success' });
+      setTimeout(() => {
+        window.location.hash = '/dashboard';
+      }, 500);
+    }
   });
 }

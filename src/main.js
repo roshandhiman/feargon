@@ -25,17 +25,23 @@ import { renderSimulator } from './pages/simulator.js';
 import { renderAdvisor } from './pages/advisor.js';
 import { renderAutoMode } from './pages/automode.js';
 import { renderStockDetail } from './pages/stock.js';
+import { renderProfile } from './pages/profile.js';
+import { store } from './utils/store.js';
 
 // Clean up default Vite files
 document.querySelector('#app').innerHTML = '';
 
-function initApp() {
+async function initApp() {
   if (typeof AOS !== 'undefined') {
     AOS.init({
       once: false, // whether animation should happen only once - while scrolling down
       mirror: true, // whether elements should animate out while scrolling past them
     });
   }
+  
+  // Connect robust store synchronization
+  await store.initializeAuth();
+  
   router.start();
 }
 
@@ -48,7 +54,8 @@ router
   .addRoute('/simulator', renderSimulator)
   .addRoute('/advisor', renderAdvisor)
   .addRoute('/automode', renderAutoMode)
-  .addRoute('/stock', renderStockDetail);
+  .addRoute('/stock', renderStockDetail)
+  .addRoute('/profile', renderProfile);
 
 // Start router
 initApp();
@@ -61,4 +68,11 @@ window.addEventListener('resize', () => {
     const event = new Event('resize');
     canvas.dispatchEvent(event);
   });
+});
+
+// Generic binding for profile menus universally mapping to new Profile Page
+document.addEventListener('click', (e) => {
+  if (e.target.closest('.user-profile')) {
+    window.location.hash = '/profile';
+  }
 });
