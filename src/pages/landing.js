@@ -5,6 +5,7 @@
 import { drawLineChart, generateSmoothData } from '../components/chart.js';
 import { initScrollAnimations } from '../utils/animations.js';
 import { icons } from '../utils/helpers.js';
+import { initShaderBackground } from '../components/shader.js';
 
 export function renderLanding(container) {
   container.innerHTML = `
@@ -30,10 +31,7 @@ export function renderLanding(container) {
     <!-- Hero -->
     <section class="hero">
       <div class="hero-bg">
-        <div class="hero-grid"></div>
-        <div class="hero-orb-1"></div>
-        <div class="hero-orb-2"></div>
-        <div class="hero-orb-3"></div>
+        <canvas id="hero-shader-canvas" class="hero-bg-canvas" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; background: black; touch-action: none;"></canvas>
       </div>
       <div class="hero-content">
         <div class="hero-badge">
@@ -41,28 +39,29 @@ export function renderLanding(container) {
           AI-Powered Investment Platform
         </div>
         <h1>
-          <span class="text-gradient">Invest Without</span><br/>Fear
+          <span class="hero-gradient-1">Invest Without</span><br/>
+          <span class="hero-gradient-2">Fear</span>
         </h1>
-        <p class="hero-subtitle">
+        <p class="hero-subtitle text-orange-100">
           AI-powered simulation that shows you the real risk before you invest. 
           See every scenario, understand every outcome, invest with confidence.
         </p>
         <div class="hero-actions">
-          <a href="#/dashboard" class="btn btn-primary btn-lg" id="hero-cta-primary">Start Investing</a>
-          <a href="#/simulator" class="btn btn-secondary btn-lg" id="hero-cta-demo">Try Simulator</a>
+          <a href="#/dashboard" class="btn btn-hero-primary btn-lg" id="hero-cta-primary">Start Investing</a>
+          <a href="#/simulator" class="btn btn-hero-secondary btn-lg" id="hero-cta-demo">Try Simulator</a>
         </div>
         <div class="hero-stats">
           <div class="hero-stat">
-            <div class="hero-stat-value">50K+</div>
-            <div class="hero-stat-label">Active Users</div>
+            <div class="hero-stat-value hero-gradient-1">Soon</div>
+            <div class="hero-stat-label text-orange-100">Public Launch</div>
           </div>
           <div class="hero-stat">
-            <div class="hero-stat-value">$2.1B</div>
-            <div class="hero-stat-label">Assets Managed</div>
+            <div class="hero-stat-value hero-gradient-1">Soon</div>
+            <div class="hero-stat-label text-orange-100">Live Trading</div>
           </div>
           <div class="hero-stat">
-            <div class="hero-stat-value">99.9%</div>
-            <div class="hero-stat-label">Uptime</div>
+            <div class="hero-stat-value hero-gradient-2">Waitlist</div>
+            <div class="hero-stat-label text-orange-100">Mobile App</div>
           </div>
         </div>
       </div>
@@ -266,4 +265,13 @@ export function renderLanding(container) {
 
   const chartSection = container.querySelector('#preview-chart');
   if (chartSection) chartObserver.observe(chartSection);
+
+  // Init Hero Shader Background
+  const heroCanvas = document.getElementById('hero-shader-canvas');
+  if (heroCanvas) {
+    const cleanupShader = initShaderBackground(heroCanvas);
+    
+    // Optional: store cleanup function if we need to remove it later or destroy on route change
+    // For now it runs behind the hero section until the hero is unmounted.
+  }
 }

@@ -139,10 +139,6 @@
 .hero-stat-value {
   font-size: var(--text-3xl);
   font-weight: 800;
-  background: var(--gradient-primary);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
 }
 
 .hero-stat-label {
@@ -502,4 +498,52 @@
 .landing-footer p {
   color: var(--text-tertiary);
   font-size: var(--text-sm);
+}
+
+/* --- Hero Dark Theme Utilities --- */
+.hero-gradient-1 {
+  background: linear-gradient(to right, #fdba74, #fef08a, #fcd34d);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
+}
+
+.hero-gradient-2 {
+  background: linear-gradient(to right, #fde047, #fb923c, #f87171);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
+}
+
+.text-orange-100 {
+  color: #ffedd5 !important;
+  text-shadow: 0 2px 10px rgba(0,0,0,0.8);
+}
+
+.btn-hero-primary {
+  background: linear-gradient(to right, #f97316, #eab308);
+  color: #000000 !important;
+  border: none;
+  font-weight: 700;
+  box-shadow: 0 4px 15px rgba(249, 115, 22, 0.4);
+}
+.btn-hero-primary:hover {
+  background: linear-gradient(to right, #ea580c, #ca8a04);
+  transform: scale(1.05);
+  box-shadow: 0 6px 20px rgba(249, 115, 22, 0.6);
+}
+
+.btn-hero-secondary {
+  background: rgba(249, 115, 22, 0.1);
+  color: #ffedd5 !important;
+  border: 1px solid rgba(253, 186, 116, 0.3);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+.btn-hero-secondary:hover {
+  background: rgba(249, 115, 22, 0.2);
+  border-color: rgba(253, 186, 116, 0.5);
+  transform: scale(1.05);
 }
