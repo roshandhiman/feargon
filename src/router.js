@@ -11,6 +11,12 @@ export class Router {
     this.currentRoute = null;
     this.appEl = document.getElementById('app');
     this._onHashChange = this._onHashChange.bind(this);
+    this.lastUser = null;
+    
+    // Auto-update routing when user session/store changes
+    store.subscribe(() => {
+      this._onHashChange();
+    });
   }
 
   addRoute(path, handler) {
@@ -32,14 +38,25 @@ export class Router {
   }
 
   _getPath() {
-    let hash = window.location.hash.slice(1) || '/';
-    return hash.split('?')[0]; // Strip query params for routing
+    const hash = window.location.hash.slice(1) || '/';
+    
+    // Detect Supabase auth callback fragments
+    const authKeys = ['access_token', 'id_token', 'error', 'provider_token', 'refresh_token'];
+    if (authKeys.some(key => hash.startsWith(key))) {
+      return '/';
+    }
+
+    // Strip query params and extra hash fragments
+    let path = hash.split('?')[0].split('#')[0];
+    return path;
   }
 
   async _onHashChange() {
     const path = this._getPath();
+    const authStateChanged = (!!store.user !== !!this.lastUser);
 
-    if (path === this.currentRoute) return;
+    if (!authStateChanged && path === this.currentRoute) return;
+    this.lastUser = store.user ? { ...store.user } : null;
 
     // Optional Auth redirection protecting non-public paths
     const publicPaths = ['/', '/auth'];
@@ -48,8 +65,8 @@ export class Router {
       return;
     }
 
-    // Redirect to dashboard if logged in and trying to access auth page
-    if (path === '/auth' && store.user) {
+    // Redirect to dashboard if logged in and trying to access auth or landing page
+    if ((path === '/auth' || path === '/') && store.user) {
       window.location.hash = '/dashboard';
       return;
     }
