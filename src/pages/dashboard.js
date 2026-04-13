@@ -73,7 +73,10 @@ export function renderDashboard(container) {
           <div class="portfolio-card glass hover-glow animate-fade-in" id="portfolio-card">
             <div class="portfolio-header">
               <div>
-                <div class="portfolio-label">Total Portfolio Value</div>
+                <div class="portfolio-label" style="display:flex; align-items:center; gap:8px;">
+                  Total Portfolio Value
+                  <span style="font-size:10px; background:rgba(245, 158, 11, 0.1); color:var(--accent-yellow); padding:2px 6px; border-radius:var(--radius-full); border:1px solid rgba(245, 158, 11, 0.3);">Demo Mode — Real Portfolio Soon</span>
+                </div>
                 <div class="portfolio-value" id="portfolio-value">—</div>
               </div>
               <span class="portfolio-change positive" id="portfolio-change">
