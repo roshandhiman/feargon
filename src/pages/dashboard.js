@@ -74,8 +74,8 @@ export function renderDashboard(container) {
             <div class="portfolio-header">
               <div>
                 <div class="portfolio-label" style="display:flex; align-items:center; gap:8px;">
-                  Total Portfolio Value
-                  <span style="font-size:10px; background:rgba(245, 158, 11, 0.1); color:var(--accent-yellow); padding:2px 6px; border-radius:var(--radius-full); border:1px solid rgba(245, 158, 11, 0.3);">Demo Mode — Real Portfolio Soon</span>
+                  <span data-i18n="dashboard.portfolio">Total Portfolio Value</span>
+                  <span data-i18n="lbl.demo" style="font-size:10px; background:rgba(245, 158, 11, 0.1); color:var(--accent-yellow); padding:2px 6px; border-radius:var(--radius-full); border:1px solid rgba(245, 158, 11, 0.3);">Demo Mode — Real Portfolio Soon</span>
                 </div>
                 <div class="portfolio-value" id="portfolio-value">—</div>
               </div>
@@ -91,20 +91,31 @@ export function renderDashboard(container) {
           <div style="margin-top:var(--space-6);">
             <div class="quick-actions">
               <a href="#/simulator" class="quick-action-btn hover-lift" id="action-invest">
-                ${icons.invest}
-                Invest
+                <div class="action-icon action-orange">
+                  ${icons.invest}
+                </div>
+                <div class="action-label" data-i18n="lbl.invest">Invest</div>
               </a>
+              
               <a href="#/simulator" class="quick-action-btn hover-lift" id="action-simulate">
-                ${icons.simulator}
-                Simulate
+                <div class="action-icon action-blue">
+                  ${icons.simulator}
+                </div>
+                <div class="action-label" data-i18n="lbl.simulate">Simulate</div>
               </a>
+              
               <a href="#/market" class="quick-action-btn hover-lift" id="action-explore">
-                ${icons.market}
-                Explore
+                <div class="action-icon action-green">
+                  ${icons.market}
+                </div>
+                <div class="action-label" data-i18n="lbl.explore">Explore</div>
               </a>
+              
               <a href="#/advisor" class="quick-action-btn hover-lift" id="action-advisor">
-                ${icons.advisor}
-                AI Chat
+                <div class="action-icon action-purple">
+                  ${icons.advisor}
+                </div>
+                <div class="action-label" data-i18n="lbl.chat">AI Chat</div>
               </a>
             </div>
           </div>

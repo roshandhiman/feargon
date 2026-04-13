@@ -5,7 +5,7 @@
 import { drawLineChart, generateSmoothData } from '../components/chart.js';
 import { initScrollAnimations } from '../utils/animations.js';
 import { icons } from '../utils/helpers.js';
-import { initShaderBackground } from '../components/shader.js';
+import { initASMRBackground } from '../components/asmr.js';
 
 export function renderLanding(container) {
   container.innerHTML = `
@@ -29,9 +29,9 @@ export function renderLanding(container) {
     </nav>
 
     <!-- Hero -->
-    <section class="hero">
+    <section class="hero" style="background: #0a0a0c;">
       <div class="hero-bg">
-        <canvas id="hero-shader-canvas" class="hero-bg-canvas" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; background: black; touch-action: none;"></canvas>
+        <canvas id="hero-asmr-canvas" class="hero-bg-canvas" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none;"></canvas>
       </div>
       <div class="hero-content">
         <div class="hero-badge">
@@ -266,12 +266,10 @@ export function renderLanding(container) {
   const chartSection = container.querySelector('#preview-chart');
   if (chartSection) chartObserver.observe(chartSection);
 
-  // Init Hero Shader Background
-  const heroCanvas = document.getElementById('hero-shader-canvas');
+  // Init Hero ASMR Background
+  const heroCanvas = document.getElementById('hero-asmr-canvas');
   if (heroCanvas) {
-    const cleanupShader = initShaderBackground(heroCanvas);
-    
-    // Optional: store cleanup function if we need to remove it later or destroy on route change
-    // For now it runs behind the hero section until the hero is unmounted.
+    // Add magnetic interactivity by capturing global mouse events in landing section
+    const cleanupAsmr = initASMRBackground(heroCanvas);
   }
 }

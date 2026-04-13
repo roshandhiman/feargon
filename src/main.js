@@ -12,6 +12,7 @@ import './styles/market.css';
 import './styles/simulator.css';
 import './styles/advisor.css';
 import './styles/automode.css';
+import './styles/fearbreaker.css';
 
 // Router
 import { router } from './router.js';
@@ -26,7 +27,11 @@ import { renderAdvisor } from './pages/advisor.js';
 import { renderAutoMode } from './pages/automode.js';
 import { renderStockDetail } from './pages/stock.js';
 import { renderProfile } from './pages/profile.js';
+import { renderFearBreaker } from './pages/fearbreaker.js';
 import { store } from './utils/store.js';
+
+// Apply Theme dynamically on load
+document.documentElement.setAttribute('data-theme', localStorage.getItem('feargon_theme') || 'light');
 
 // Clean up default Vite files
 document.querySelector('#app').innerHTML = '';
@@ -55,7 +60,8 @@ router
   .addRoute('/advisor', renderAdvisor)
   .addRoute('/automode', renderAutoMode)
   .addRoute('/stock', renderStockDetail)
-  .addRoute('/profile', renderProfile);
+  .addRoute('/profile', renderProfile)
+  .addRoute('/fearbreaker', renderFearBreaker);
 
 // Start router
 initApp();

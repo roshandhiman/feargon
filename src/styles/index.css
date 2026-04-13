@@ -111,6 +111,27 @@
   --navbar-height: 64px;
 }
 
+html[data-theme="dark"] {
+  --bg-primary: #0f172a;
+  --bg-secondary: #1e293b;
+  --bg-tertiary: #334155;
+  --bg-card: rgba(255, 255, 255, 0.05);
+  --bg-card-hover: rgba(255, 255, 255, 0.08);
+  --bg-glass: rgba(15, 23, 42, 0.8);
+  --bg-glass-strong: rgba(15, 23, 42, 0.95);
+  
+  --text-primary: #f8fafc;
+  --text-secondary: #cbd5e1;
+  --text-tertiary: #94a3b8;
+  --text-muted: #64748b;
+  
+  --border-subtle: rgba(255, 255, 255, 0.06);
+  --border-default: rgba(255, 255, 255, 0.1);
+  --border-hover: rgba(255, 255, 255, 0.15);
+  --border-accent: rgba(0, 212, 255, 0.4);
+}
+
+
 /* --- Reset & Base --- */
 *,
 *::before,
@@ -535,95 +556,6 @@ h3 > svg, h4 > svg, p > svg, span > svg {
   transition: opacity 400ms var(--ease-out), transform 400ms var(--ease-out);
 }
 
-/* Global Override for Black Text */
-* {
-  color: #000000 !important;
-}
-
-.text-gradient {
-  background: none !important;
-  -webkit-text-fill-color: #000000 !important;
-  color: #000000 !important;
-}
-
-/* Global Button Override for Black & White */
-button,
-.btn,
-.btn-primary,
-.btn-secondary,
-.btn-ghost,
-.market-tab,
-.period-option,
-.notification-btn,
-.tab-item,
-.auth-tab,
-.risk-option,
-.social-btn,
-.risk-level-btn,
-.chat-send-btn,
-.chat-suggestion {
-  background: #000000 !important;
-  color: #FFFFFF !important;
-  border-color: #000000 !important;
-  box-shadow: none !important;
-}
-
-button:hover,
-.btn:hover,
-.btn-primary:hover,
-.btn-secondary:hover,
-.btn-ghost:hover,
-.market-tab:hover,
-.period-option:hover,
-.notification-btn:hover,
-.tab-item:hover,
-.auth-tab:hover,
-.risk-option:hover,
-.social-btn:hover,
-.risk-level-btn:hover,
-.chat-send-btn:hover,
-.chat-suggestion:hover {
-  background: #222222 !important;
-  color: #FFFFFF !important;
-  border-color: #222222 !important;
-}
-
-button.active,
-.btn.active,
-.btn-primary.active,
-.btn-secondary.active,
-.btn-ghost.active,
-.market-tab.active,
-.period-option.active,
-.notification-btn.active,
-.tab-item.active,
-.auth-tab.active,
-.risk-option.active,
-.social-btn.active,
-.risk-level-btn.active,
-.chat-send-btn.active,
-.chat-suggestion.active {
-  background: #222222 !important;
-  color: #FFFFFF !important;
-  border-color: #ffffff !important;
-  outline: 2px solid #ffffff !important;
-  outline-offset: -1px;
-}
-
-button svg,
-.btn svg,
-.market-tab svg,
-.period-option svg,
-.notification-btn svg,
-.tab-item svg,
-.auth-tab svg,
-.risk-option svg,
-.social-btn svg,
-.risk-level-btn svg,
-.chat-send-btn svg,
-.chat-suggestion svg {
-  color: #FFFFFF !important;
-}
 
 /* --- Loading Pulse Animation --- */
 @keyframes loadingPulse {

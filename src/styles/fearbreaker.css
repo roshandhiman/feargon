@@ -1,0 +1,20 @@
+/* ====================================
+   Fearbreaker Specific Styles
+   ==================================== */
+
+.fb-option {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.fb-option:hover {
+  transform: translateY(-5px);
+  background: var(--bg-card-hover) !important;
+  color: var(--accent-cyan) !important;
+  border-color: var(--accent-cyan) !important;
+  box-shadow: var(--shadow-glow-cyan);
+}
+
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}

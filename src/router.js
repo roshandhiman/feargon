@@ -3,6 +3,7 @@
    ==================================== */
 
 import { store } from './utils/store.js';
+import { i18n } from './utils/i18n.js';
 
 export class Router {
   constructor() {
@@ -61,6 +62,9 @@ export class Router {
       // Clear and render
       this.appEl.innerHTML = '';
       await handler(this.appEl);
+      
+      // Parse translations for newly injected elements
+      i18n.parse(this.appEl);
       
       // Global avatar syncing after layout load
       const avatarKey = localStorage.getItem('fearless_profile_avatar');
