@@ -1,13 +1,12 @@
-/* ====================================
-   Landing Page
-   ==================================== */
-
+import { store } from '../utils/store.js';
 import { drawLineChart, generateSmoothData } from '../components/chart.js';
 import { initScrollAnimations } from '../utils/animations.js';
 import { icons } from '../utils/helpers.js';
 import { initASMRBackground } from '../components/asmr.js';
 
 export function renderLanding(container) {
+  const isLoggedIn = !!store.user;
+
   container.innerHTML = `
     <!-- Navbar -->
     <nav class="landing-nav" id="landing-nav">
@@ -22,8 +21,12 @@ export function renderLanding(container) {
           <span class="nav-link" data-scroll="preview">Preview</span>
         </div>
         <div class="nav-actions">
-          <a href="#/auth" class="btn btn-ghost btn-sm">Log In</a>
-          <a href="#/auth" class="btn btn-primary btn-sm">Get Started</a>
+          ${isLoggedIn ? `
+            <a href="#/dashboard" class="btn btn-primary btn-sm">Dashboard</a>
+          ` : `
+            <a href="#/auth" class="btn btn-ghost btn-sm">Log In</a>
+            <a href="#/auth" class="btn btn-primary btn-sm">Get Started</a>
+          `}
         </div>
       </div>
     </nav>
@@ -47,7 +50,7 @@ export function renderLanding(container) {
           See every scenario, understand every outcome, invest with confidence.
         </p>
         <div class="hero-actions">
-          <a href="#/dashboard" class="btn btn-hero-primary btn-lg" id="hero-cta-primary">Start Investing</a>
+          <a href="#/dashboard" class="btn btn-hero-primary btn-lg" id="hero-cta-primary">${isLoggedIn ? 'Go to Dashboard' : 'Start Investing'}</a>
           <a href="#/simulator" class="btn btn-hero-secondary btn-lg" id="hero-cta-demo">Try Simulator</a>
         </div>
         <div class="hero-stats">
@@ -212,7 +215,7 @@ export function renderLanding(container) {
           <h2><span class="text-gradient">Ready to invest without fear?</span></h2>
           <p>Join thousands of investors who trust AI-powered simulations to make confident decisions.</p>
           <div style="position:relative;">
-            <a href="#/auth" class="btn btn-primary btn-lg">Get Started — Free</a>
+            <a href="${isLoggedIn ? '#/dashboard' : '#/auth'}" class="btn btn-primary btn-lg">${isLoggedIn ? 'Go to Dashboard' : 'Get Started — Free'}</a>
           </div>
         </div>
       </div>

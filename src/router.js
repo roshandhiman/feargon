@@ -48,6 +48,12 @@ export class Router {
       return;
     }
 
+    // Redirect to dashboard if logged in and trying to access auth page
+    if (path === '/auth' && store.user) {
+      window.location.hash = '/dashboard';
+      return;
+    }
+
     this.currentRoute = path;
 
     const handler = this.routes[path] || this.routes['/'];
