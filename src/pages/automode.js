@@ -39,7 +39,7 @@ export function renderAutoMode(container) {
           ${icons.bell}
         </button>
         <div class="user-profile">
-          <div class="user-avatar">U</div>
+          <div class="user-avatar">R</div>
         </div>
       </div>
     </div>

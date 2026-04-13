@@ -55,9 +55,9 @@ export function renderDashboard(container) {
           <span class="notification-dot"></span>
         </button>
         <div class="user-profile" id="user-profile">
-          <div class="user-avatar">U</div>
+          <div class="user-avatar">R</div>
           <div>
-            <div class="user-name">User</div>
+            <div class="user-name">roshu</div>
             <div class="user-role">Investor</div>
           </div>
         </div>

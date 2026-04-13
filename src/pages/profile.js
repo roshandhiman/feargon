@@ -20,7 +20,7 @@ export function renderProfile(container) {
   
   // Safe extraction of profile data
   const user = store.user;
-  const profileName = store.profile?.name || user?.user_metadata?.name || 'User';
+  const profileName = store.profile?.name || user?.user_metadata?.name || 'roshu';
   const email = user?.email || 'Not logged in';
   const age = localStorage.getItem('fearless_profile_age') || '';
   const work = localStorage.getItem('fearless_profile_work') || '';
