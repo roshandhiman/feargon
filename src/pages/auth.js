@@ -180,4 +180,30 @@ export function renderAuth(container) {
       }, 500);
     }
   });
+
+  // === Social Login ===
+  const googleBtn = container.querySelector('#social-google');
+  if (googleBtn) {
+    googleBtn.addEventListener('click', async () => {
+      console.log('Initiating Google login...');
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: window.location.origin
+        }
+      });
+      
+      if (error) {
+        console.error('Google login error:', error);
+        showToast(error.message, { type: 'error' });
+      }
+    });
+  }
+
+  const appleBtn = container.querySelector('#social-apple');
+  if (appleBtn) {
+    appleBtn.addEventListener('click', () => {
+      showToast('Apple login is not configured yet', { type: 'info' });
+    });
+  }
 }
