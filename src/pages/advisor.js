@@ -199,14 +199,6 @@ export function renderAdvisor(container) {
         </div>
       </div>
     `;
-
-    // Re-bind suggestion chips for a freshly rendered welcome state
-    const suggestionBtns = messagesContainer.querySelectorAll('.chat-suggestion');
-    suggestionBtns.forEach(btn => {
-      btn.addEventListener('click', () => {
-        sendMessage(btn.dataset.suggestion);
-      });
-    });
   }
 
   // Render Sidebar List
