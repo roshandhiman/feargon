@@ -219,7 +219,8 @@ export function renderSimulator(container) {
       `).join('');
 
       searchResults.querySelectorAll('.add-asset-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
+        btn.addEventListener('mousedown', (e) => {
+          e.preventDefault(); // Prevent input blur from hiding results before click
           const sym = btn.dataset.symbol;
           if (!selectedAssets.find(a => a.symbol === sym)) {
             selectedAssets.push({ symbol: sym, name: btn.dataset.name });
