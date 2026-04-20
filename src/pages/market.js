@@ -4,7 +4,7 @@
 
 import { createSidebar, createMobileMenuBtn } from '../components/sidebar.js';
 import { drawSparkline, generateSmoothData } from '../components/chart.js';
-import { icons, formatCurrency, debounce } from '../utils/helpers.js';
+import { icons, formatCurrency, debounce, renderUserProfile } from '../utils/helpers.js';
 import { getCryptoMarketData } from '../services/crypto.js';
 import { searchStocks } from '../services/yahoo.js';
 import { getMarketStockPrice } from '../services/finnhub.js';
@@ -76,9 +76,7 @@ export function renderMarket(container) {
         <button class="notification-btn" id="btn-notifications">
           ${icons.bell}
         </button>
-        <div class="user-profile">
-          <div class="user-avatar">R</div>
-        </div>
+        ${renderUserProfile()}
       </div>
     </div>
 

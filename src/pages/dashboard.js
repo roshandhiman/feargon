@@ -5,7 +5,7 @@
 import { createSidebar, createMobileMenuBtn } from '../components/sidebar.js';
 import { createGauge } from '../components/gauge.js';
 import { drawLineChart, generateSmoothData } from '../components/chart.js';
-import { icons, formatCurrency } from '../utils/helpers.js';
+import { icons, formatCurrency, renderUserProfile } from '../utils/helpers.js';
 import { getCoinPrice, getCryptoMarketData } from '../services/crypto.js';
 import { getStockPrice } from '../services/yahoo.js';
 import { registerInterval, clearPageIntervals, getCachedData, setCachedData, isCacheValid } from '../services/dataManager.js';
@@ -54,13 +54,7 @@ export function renderDashboard(container) {
           ${icons.bell}
           <span class="notification-dot"></span>
         </button>
-        <div class="user-profile" id="user-profile">
-          <div class="user-avatar">R</div>
-          <div>
-            <div class="user-name">roshu</div>
-            <div class="user-role">Investor</div>
-          </div>
-        </div>
+        ${renderUserProfile()}
       </div>
     </div>
 
@@ -181,7 +175,6 @@ export function renderDashboard(container) {
               Your portfolio is well positioned. Connect your assets and run a simulation to receive personalized AI-driven insights.
             </div>
           </div>
-        </div>
       </div>
     </div>
   `;

@@ -159,3 +159,33 @@ export function icon(name, size = 20) {
   }
   return wrapper;
 }
+/**
+ * Get the current user name with multiple fallbacks
+ */
+export function getUserName() {
+  return store.profile?.name || store.user?.user_metadata?.name || localStorage.getItem('fearless_profile_name') || 'roshu';
+}
+
+/**
+ * Render standard user profile snippet for top nav
+ */
+export function renderUserProfile() {
+  const name = getUserName();
+  const avatarUrl = localStorage.getItem('fearless_profile_avatar');
+  
+  const avatarContent = avatarUrl 
+    ? `<img src="${avatarUrl}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;" />` 
+    : name.charAt(0).toUpperCase();
+
+  return `
+    <div class="user-profile" onclick="window.location.hash='#/profile'" style="cursor:pointer;">
+      <div class="user-avatar" style="overflow:hidden; display:flex; align-items:center; justify-content:center;">
+        ${avatarContent}
+      </div>
+      <div>
+        <div class="user-name">${name}</div>
+        <div class="user-role">Investor</div>
+      </div>
+    </div>
+  `;
+}

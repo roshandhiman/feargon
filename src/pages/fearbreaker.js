@@ -1,6 +1,4 @@
-import { createSidebar, createMobileMenuBtn } from '../components/sidebar.js';
-import { icons } from '../utils/helpers.js';
-import { store } from '../utils/store.js';
+import { icons, renderUserProfile } from '../utils/helpers.js';
 
 export function renderFearBreaker(container) {
   container.innerHTML = '';
@@ -14,8 +12,6 @@ export function renderFearBreaker(container) {
   const main = document.createElement('div');
   main.className = 'main-content';
 
-  const profileName = store.profile?.name || store.user?.user_metadata?.name || 'Investor';
-
   main.innerHTML = `
     <div class="top-navbar">
       <div style="display:flex;align-items:center;gap:var(--space-3);">
@@ -24,9 +20,7 @@ export function renderFearBreaker(container) {
       </div>
       <div class="top-navbar-actions">
         <button class="notification-btn">${icons.bell}</button>
-        <div class="user-profile">
-          <div class="user-avatar">${profileName.charAt(0).toUpperCase()}</div>
-        </div>
+        ${renderUserProfile()}
       </div>
     </div>
 

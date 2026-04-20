@@ -1,5 +1,5 @@
 import { createSidebar, createMobileMenuBtn } from '../components/sidebar.js';
-import { icons } from '../utils/helpers.js';
+import { icons, renderUserProfile, getUserName } from '../utils/helpers.js';
 import { supabase } from '../utils/supabase.js';
 import { store } from '../utils/store.js';
 import { showToast } from '../components/toast.js';
@@ -20,7 +20,7 @@ export function renderProfile(container) {
   
   // Safe extraction of profile data
   const user = store.user;
-  const profileName = store.profile?.name || user?.user_metadata?.name || 'roshu';
+  const profileName = getUserName();
   const email = user?.email || 'Not logged in';
   const age = localStorage.getItem('fearless_profile_age') || '';
   const work = localStorage.getItem('fearless_profile_work') || '';
@@ -39,9 +39,7 @@ export function renderProfile(container) {
         <button class="notification-btn">
           ${icons.bell}
         </button>
-        <div class="user-profile">
-          <div class="user-avatar">${profileName.charAt(0).toUpperCase()}</div>
-        </div>
+        ${renderUserProfile()}
       </div>
     </div>
     
@@ -180,11 +178,13 @@ export function renderProfile(container) {
       try {
         saveProfileBtn.textContent = 'Saving...';
         
-        // Save name to Supabase
-        const { error } = await supabase.from('profiles').update({ name }).eq('id', user.id);
-        if (error) throw error;
+        // Save to Supabase if logged in
+        if (user) {
+          await supabase.from('profiles').update({ name }).eq('id', user.id);
+        }
         
-        // Save extra fields to localStorage to bypass missing Supabase columns
+        // Save to localStorage for persistence (especially for guests)
+        localStorage.setItem('fearless_profile_name', name);
         localStorage.setItem('fearless_profile_age', ageVal);
         localStorage.setItem('fearless_profile_work', workVal);
         if (newAvatarUrl) {

@@ -31,16 +31,13 @@ export function renderAutoMode(container) {
     <div class="top-navbar">
       <div style="display:flex;align-items:center;gap:var(--space-3);">
         <div id="mobile-menu-slot"></div>
-        <h1 class="top-navbar-title">Full Access Mode</h1>
+        <h1 class="top-navbar-title">Full Access Control</h1>
       </div>
       <div class="top-navbar-actions">
-        <span class="badge">Beta</span>
         <button class="notification-btn">
           ${icons.bell}
         </button>
-        <div class="user-profile">
-          <div class="user-avatar">R</div>
-        </div>
+        ${renderUserProfile()}
       </div>
     </div>
 

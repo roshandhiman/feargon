@@ -1,6 +1,6 @@
 import { createSidebar, createMobileMenuBtn } from '../components/sidebar.js';
 import { drawLineChart } from '../components/chart.js';
-import { icons, formatCurrency } from '../utils/helpers.js';
+import { icons, formatCurrency, renderUserProfile } from '../utils/helpers.js';
 import { getStockTimeSeries, getMarketStockPrice } from '../services/finnhub.js';
 import { getCoinHistory, getCoinPrice } from '../services/crypto.js';
 import { getAIAssetVerdict } from '../utils/gemini.js';
@@ -65,6 +65,9 @@ export async function renderStockDetail(container) {
         <!-- Right: AI Verdict -->
         <div class="ai-verdict-sidebar">
           <div class="glass" style="padding: 24px; height: 100%;">
+            <div style="margin-bottom: 24px; display: flex; justify-content: flex-end;">
+              ${renderUserProfile()}
+            </div>
             <h3 style="display: flex; align-items: center; gap: 8px; margin-bottom: 24px;">
               ${icons.sparkles}
               AI Expert Verdict

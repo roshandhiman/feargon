@@ -4,7 +4,7 @@
 
 import { createSidebar, createMobileMenuBtn } from '../components/sidebar.js';
 import { drawSimulatorChart } from '../components/chart.js';
-import { icons, formatCurrency, debounce } from '../utils/helpers.js';
+import { icons, formatCurrency, debounce, renderUserProfile } from '../utils/helpers.js';
 import { runAISimulation } from '../utils/gemini.js';
 import { searchStocks } from '../services/yahoo.js';
 import { getCryptoMarketData } from '../services/crypto.js';
@@ -31,9 +31,7 @@ export function renderSimulator(container) {
         <button class="notification-btn">
           ${icons.bell}
         </button>
-        <div class="user-profile">
-          <div class="user-avatar">R</div>
-        </div>
+        ${renderUserProfile()}
       </div>
     </div>
 

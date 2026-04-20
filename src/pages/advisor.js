@@ -4,7 +4,7 @@
 
 import { getBotResponse } from "../utils/gemini.js";
 import { createSidebar, createMobileMenuBtn } from '../components/sidebar.js';
-import { icons } from '../utils/helpers.js';
+import { icons, renderUserProfile, getUserName } from '../utils/helpers.js';
 import { store } from '../utils/store.js';
 
 const suggestions = [
@@ -48,9 +48,7 @@ export function renderAdvisor(container) {
         <button class="notification-btn">
           ${icons.bell}
         </button>
-        <div class="user-profile">
-          <div class="user-avatar">R</div>
-        </div>
+        ${renderUserProfile()}
       </div>
     </div>
 
@@ -122,10 +120,18 @@ export function renderAdvisor(container) {
     const now = new Date();
     const displayTime = time || now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
+    const name = getUserName();
+    const avatarUrl = localStorage.getItem('fearless_profile_avatar');
+    const avatarContent = avatarUrl 
+      ? `<img src="${avatarUrl}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;" />` 
+      : name.charAt(0).toUpperCase();
+
     const msg = document.createElement('div');
     msg.className = `chat-message ${isUser ? 'user' : 'ai'}`;
     msg.innerHTML = `
-      <div class="chat-msg-avatar">${isUser ? 'U' : '✦'}</div>
+      <div class="chat-msg-avatar" style="overflow:hidden; display:flex; align-items:center; justify-content:center;">
+        ${isUser ? avatarContent : '✦'}
+      </div>
       <div>
         <div class="chat-bubble">${text}</div>
         <div class="chat-time">${displayTime}</div>

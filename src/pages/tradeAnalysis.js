@@ -2,9 +2,7 @@
    Trade Vision - AI Graph Analysis
    ==================================== */
 
-import { createSidebar, createMobileMenuBtn } from '../components/sidebar.js';
-import { icons } from '../utils/helpers.js';
-import { analyzeGraphVision } from '../utils/gemini.js';
+import { icons, renderUserProfile } from '../utils/helpers.js';
 
 export function renderTradeAnalysis(container) {
   container.innerHTML = '';
@@ -23,6 +21,12 @@ export function renderTradeAnalysis(container) {
       <div style="display:flex;align-items:center;gap:var(--space-3);">
         <div id="mobile-menu-slot"></div>
         <h1 class="top-navbar-title">Trade Vision AI</h1>
+      </div>
+      <div class="top-navbar-actions">
+        <button class="notification-btn">
+          ${icons.bell}
+        </button>
+        ${renderUserProfile()}
       </div>
     </div>
 
