@@ -8,6 +8,7 @@ const translations = {
     "nav.automode": "Full Access",
     "nav.settings": "Settings",
     "nav.fearbreaker": "Fear Profiler",
+    "nav.trade": "Trade Vision",
     
     "dashboard.portfolio": "Total Portfolio Value",
     "dashboard.confidence": "Confidence Score",
@@ -19,7 +20,12 @@ const translations = {
     "lbl.invest": "Invest",
     "lbl.simulate": "Simulate",
     "lbl.explore": "Explore",
-    "lbl.chat": "AI Chat"
+    "lbl.chat": "AI Chat",
+    "lbl.connectGroww": "Connect Groww",
+    "lbl.verdict": "AI Expert Verdict",
+    "lbl.buy": "BUY",
+    "lbl.sell": "SELL",
+    "lbl.hold": "HOLD"
   },
   hi: {
     "nav.dashboard": "डैशबोर्ड",
@@ -29,6 +35,7 @@ const translations = {
     "nav.automode": "पूर्ण एक्सेस",
     "nav.settings": "सेटिंग्स",
     "nav.fearbreaker": "डर विश्लेषक",
+    "nav.trade": "ट्रेड विज़न",
     
     "dashboard.portfolio": "कुल पोर्टफोलियो मूल्य",
     "dashboard.confidence": "आत्मविश्वास स्कोर",
@@ -40,7 +47,12 @@ const translations = {
     "lbl.invest": "निवेश करें",
     "lbl.simulate": "सिमुलेट करें",
     "lbl.explore": "एक्सप्लोर करें",
-    "lbl.chat": "एआई चैट"
+    "lbl.chat": "एआई चैट",
+    "lbl.connectGroww": "ग्रो (Groww) जोड़ें",
+    "lbl.verdict": "एआई विशेषज्ञ फैसला",
+    "lbl.buy": "खरीदें",
+    "lbl.sell": "बेचें",
+    "lbl.hold": "होल्ड"
   }
 };
 

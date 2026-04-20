@@ -20,7 +20,8 @@ if (!process.env.GEMINI_API_KEY) {
 const app = express();
 
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
 // Load key after environment is heavily guaranteed
 const apiKey = process.env.GEMINI_API_KEY || 'REDACTED_API_KEY';
@@ -53,7 +54,6 @@ app.get('/api/proxy/yahoo', async (req, res) => {
         const data = await response.json();
         res.json(data);
     } catch (e) {
-        // Fallback for hackathon presentation if rate-limited
         res.json({
             chart: {
                 result: [{
@@ -68,12 +68,15 @@ app.get('/api/proxy/yahoo', async (req, res) => {
 });
 
 app.get('/api/proxy/crypto', async (req, res) => {
-    const { type, ids } = req.query; 
+    const { type, ids, per_page = 250 } = req.query; 
     try {
-        let url = 'https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&sparkline=true&price_change_percentage=24h';
+        let url = `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=${per_page}&page=1&sparkline=true&price_change_percentage=24h`;
+        
         if (type === 'simple') {
             url = `https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currency=usd&include_24hr_change=true`;
-        } else if (ids) {
+        } else if (type === 'history') {
+            url = `https://api.coingecko.com/api/v3/coins/${ids}/market_chart?vs_currency=usd&days=${req.query.days || 7}`;
+        } else if (ids && ids !== 'all') {
             url += `&ids=${ids}`;
         }
         
@@ -82,86 +85,133 @@ app.get('/api/proxy/crypto', async (req, res) => {
         const data = await response.json();
         res.json(data);
     } catch (e) {
-        // Guaranteed hackathon fallback
         if (type === 'simple') {
             res.json({ 
                 bitcoin: { usd: 67110, usd_24h_change: 2.1 }, 
-                ethereum: { usd: 3400, usd_24h_change: 1.5 },
-                solana: { usd: 145, usd_24h_change: -0.5 }
+                ethereum: { usd: 3400, usd_24h_change: 1.5 }
             });
         } else {
             res.json([
-                { id: 'bitcoin', symbol: 'btc', name: 'Bitcoin', current_price: 67110, price_change_percentage_24h: 2.1, image: '' },
-                { id: 'ethereum', symbol: 'eth', name: 'Ethereum', current_price: 3400, price_change_percentage_24h: 1.5, image: '' },
-                { id: 'solana', symbol: 'sol', name: 'Solana', current_price: 145, price_change_percentage_24h: -0.5, image: '' }
+                { id: 'bitcoin', symbol: 'btc', name: 'Bitcoin', current_price: 67110, price_change_percentage_24h: 2.1 },
+                { id: 'ethereum', symbol: 'eth', name: 'Ethereum', current_price: 3400, price_change_percentage_24h: 1.5 }
             ]);
         }
     }
 });
 
+// --- NEW: AI SIMULATION ENDPOINT ---
+app.post('/api/simulate', async (req, res) => {
+    const { assets, amount, period } = req.body;
 
-app.post('/api/chat', async (req, res) => {
-    const { message } = req.body;
+    const prompt = `Perform a realistic financial simulation analysis for the following portfolio:
+    Assets: ${assets.join(', ')}
+    Investment: $${amount}
+    Horizon: ${period} years
 
-    if (!message || typeof message !== 'string' || message.trim() === "") {
-        return res.status(400).json({ error: "Valid message string is required" });
-    }
+    Provide the analysis in JSON format with exactly these keys:
+    - riskScore: (0-100)
+    - lossProbability: (percentage)
+    - expectedReturn: (percentage)
+    - analysisBrief: (2-3 sentences)
+    - recommendations: (Array of 3 strings)
 
-    const currentDate = new Date().toDateString();
-    const currentTime = new Date().toLocaleTimeString();
+    Think like a professional quant advisor. Consider current 2024-2025 market trends.`;
 
-    const contents = [
-        {
-            role: "user",
-            parts: [
-                {
-                    text: `${systemInstruction}
-
-[System Context: Today is ${currentDate}, Time: ${currentTime}]
-
-User: ${message}`
-                }
-            ]
-        }
-    ];
-    let attempt = 0;
-    const maxRetries = 1; // 1 retry if API fails
-
-    while (attempt <= maxRetries) {
-        try {
-            const result = await model.generateContent({ contents });
-            const text = result.response.text();
-
-            return res.json({ reply: text });
-        } catch (error) {
-            console.error(`[Server] Gemini Error (Attempt ${attempt + 1}):`, error.message || error);
-
-            if (attempt < maxRetries) {
-                await delay(1000); // 1st retry after 1 sec
-            } else {
-                // All retries exhausted
-                console.error("[Server] Gemini totally failed. Using Contextual Hackathon Fallback.");
-                const lowerMsg = message.toLowerCase();
-                let fakeReply = "Based on current market conditions, I recommend focusing on long-term compound growth rather than short-term trading.";
-                
-                if (lowerMsg.includes('python') || lowerMsg.includes('weather') || lowerMsg.includes('code')) {
-                    fakeReply = "Sorry, I can only help with finance-related questions like stocks, crypto, and investments.";
-                } else if (lowerMsg.includes('hi') || lowerMsg.includes('hello')) {
-                    fakeReply = "Hello! How can I assist you with your investment portfolio today?";
-                } else if (lowerMsg.includes('stock')) {
-                    fakeReply = "Tech stocks are showing volatility this week. For stability, consider balancing your portfolio with blue-chip dividend stocks (like Apple or Microsoft) or broad ETFs.";
-                } else if (lowerMsg.includes('crypto')) {
-                    fakeReply = "Cryptocurrency remains highly speculative. If you invest in assets like Bitcoin or Solana, ensure it represents no more than 5-10% of your total portfolio.";
-                } else if (lowerMsg.includes('risk')) {
-                    fakeReply = "Managing risk is crucial! Always diversify across different sectors, keep emergency cash reserves, and never invest money you might need in the next 3-5 years.";
-                }
-
-                return res.json({ reply: fakeReply });
-            }
-            attempt++;
-        }
+    try {
+        const result = await model.generateContent(prompt);
+        let text = result.response.text();
+        // Extract JSON if AI wrapped it in markdown
+        text = text.replace(/```json|```/g, '').trim();
+        res.json(JSON.parse(text));
+    } catch (error) {
+        res.status(500).json({ 
+            riskScore: 45, 
+            lossProbability: 12, 
+            expectedReturn: 8, 
+            analysisBrief: "Unable to reach deep AI analysis. Here is a conservative fallback based on historical averages.",
+            recommendations: ["Maintain diversification", "Monitor volatility", "Rebalance quarterly"]
+        });
     }
 });
 
-// Export the app for Vercel Serverless
+// --- NEW: AI TECHNICAL VERDICT ENDPOINT ---
+app.post('/api/analysis/verdict', async (req, res) => {
+    const { symbol, price, history, type = 'stock' } = req.body;
+
+    const prompt = `Act as a senior technical analyst. Provide a short-term trading verdict for ${symbol} (${type}).
+    Current Price: ${price}
+    Recent History (simplified): ${JSON.stringify(history)}
+
+    Return a JSON response with:
+    - verdict: "BUY" | "HOLD" | "SELL"
+    - confidence: (0-100)
+    - reasoning: (2 sentences max)
+    - keyLevels: (Array of 2 price levels)
+    
+    Make it feel professional and objective. If the data is random, say HOLD.`;
+
+    try {
+        const result = await model.generateContent(prompt);
+        let text = result.response.text();
+        text = text.replace(/```json|```/g, '').trim();
+        res.json(JSON.parse(text));
+    } catch (error) {
+        res.json({
+            verdict: "HOLD",
+            confidence: 50,
+            reasoning: "Market data analysis is currently inconclusive due to volatility. Monitor volume levels.",
+            keyLevels: ["Support: N/A", "Resistance: N/A"]
+        });
+    }
+});
+
+// --- NEW: AI VISION TRADE ANALYSIS ---
+app.post('/api/vision', async (req, res) => {
+    const { image, tradeType } = req.body; // image is base64
+
+    if (!image) return res.status(400).json({ error: "Image required" });
+
+    try {
+        const prompt = `Analyze this ${tradeType || 'intraday'} trading chart. 
+        Identify trends, support/resistance levels, and indicators.
+        Determine if the action should be BUY (UP) or SELL (DOWN).
+        
+        Provide response in JSON format:
+        - prediction: "BUY" or "SELL"
+        - confidence: (0-100)
+        - reasoning: (1-2 sentences)
+        - disclaimer: "Mandatory disclaimer: This is for educational/testing purposes only."`;
+
+        const result = await model.generateContent([
+            prompt,
+            {
+                inlineData: {
+                    data: image.split(',')[1] || image,
+                    mimeType: "image/jpeg"
+                }
+            }
+        ]);
+
+        let text = result.response.text();
+        text = text.replace(/```json|```/g, '').trim();
+        res.json(JSON.parse(text));
+    } catch (error) {
+        console.error("Vision Error:", error);
+        res.status(500).json({ error: "Vision analysis failed. Ensure API key supports multimodal input." });
+    }
+});
+
+app.post('/api/chat', async (req, res) => {
+    const { message } = req.body;
+    if (!message) return res.status(400).json({ error: "Message required" });
+
+    const contents = [{ role: "user", parts: [{ text: `${systemInstruction}\nUser: ${message}` }] }];
+    try {
+        const result = await model.generateContent({ contents });
+        res.json({ reply: result.response.text() });
+    } catch (error) {
+        res.json({ reply: "I'm currently busy analyzing the markets. Please try again in a moment!" });
+    }
+});
+
 export default app;

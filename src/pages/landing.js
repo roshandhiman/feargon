@@ -230,12 +230,11 @@ export function renderLanding(container) {
   `;
 
   // === Interactive behavior ===
-
-  // Navbar scroll effect
   const nav = container.querySelector('#landing-nav');
-  window.addEventListener('scroll', () => {
+  const scrollHandler = () => {
     nav.classList.toggle('scrolled', window.scrollY > 50);
-  });
+  };
+  window.addEventListener('scroll', scrollHandler);
 
   // Smooth scroll for nav links
   container.querySelectorAll('[data-scroll]').forEach(link => {
@@ -270,9 +269,16 @@ export function renderLanding(container) {
   if (chartSection) chartObserver.observe(chartSection);
 
   // Init Hero ASMR Background
+  let cleanupAsmr = null;
   const heroCanvas = document.getElementById('hero-asmr-canvas');
   if (heroCanvas) {
-    // Add magnetic interactivity by capturing global mouse events in landing section
-    const cleanupAsmr = initASMRBackground(heroCanvas);
+    cleanupAsmr = initASMRBackground(heroCanvas);
   }
+
+  // Cleanup function for the router
+  return () => {
+    window.removeEventListener('scroll', scrollHandler);
+    chartObserver.disconnect();
+    if (cleanupAsmr) cleanupAsmr();
+  };
 }

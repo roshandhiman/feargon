@@ -14,85 +14,88 @@ export function renderFearBreaker(container) {
   const main = document.createElement('div');
   main.className = 'main-content';
 
-  // Safe extraction of profile data for the nav
-  const user = store.user;
-  const profileName = store.profile?.name || user?.user_metadata?.name || 'User';
+  const profileName = store.profile?.name || store.user?.user_metadata?.name || 'Investor';
 
   main.innerHTML = `
-    <!-- Top Navbar -->
     <div class="top-navbar">
       <div style="display:flex;align-items:center;gap:var(--space-3);">
         <div id="mobile-menu-slot"></div>
-        <h1 class="top-navbar-title">Fear Profiler</h1>
+        <h1 class="top-navbar-title">Psychological Fear Profiler</h1>
       </div>
       <div class="top-navbar-actions">
-        <button class="notification-btn" id="btn-notifications">
-          ${icons.bell}
-          <span class="notification-dot"></span>
-        </button>
+        <button class="notification-btn">${icons.bell}</button>
         <div class="user-profile">
           <div class="user-avatar">${profileName.charAt(0).toUpperCase()}</div>
-          <div class="user-info">
-            <div class="user-name">${profileName}</div>
-            <div class="user-role">Investor</div>
-          </div>
         </div>
       </div>
     </div>
 
-    <!-- Content -->
-    <div class="dashboard-content animate-fade-in">
-      <div style="max-width: 800px; margin: 0 auto; padding-top: var(--space-4);">
-        <div class="content-header" style="text-align: center; margin-bottom: var(--space-12);">
-          <h1 class="text-gradient" style="font-size: var(--text-5xl); margin-bottom: var(--space-4);">Discover Your Fear Profile</h1>
-          <p class="text-secondary" style="max-width: 600px; margin: 0 auto; font-size: var(--text-lg);">
-            Investing fear comes from the unknown. Take this 3-question psychology assessment to identify your stress triggers, reveal your personal Fear Persona, and let our AI build a combat strategy.
-          </p>
+    <div class="dashboard-content">
+      <div style="max-width: 900px; margin: 0 auto;">
+        <div id="fb-intro" style="text-align: center; padding: 60px 20px;">
+           <div class="orb orb-purple" style="margin: 0 auto 24px; width: 120px; height: 120px; filter: blur(40px); opacity: 0.6;"></div>
+           <h1 class="text-gradient" style="font-size: 48px; margin-bottom: 16px;">Break Your Investing Fear</h1>
+           <p class="text-secondary" style="font-size: 18px; max-width: 600px; margin: 0 auto 40px;">
+             Fear is the #1 reason investors lose money. Our AI-driven profiler identifies your psychological stressors and gives you a blueprint to combat them.
+           </p>
+           <button id="start-quiz" class="btn btn-primary btn-lg" style="padding: 16px 48px;">Begin Assessment</button>
         </div>
 
-        <!-- Quiz Stage -->
-        <div id="fb-quiz-stage" class="glass-strong" style="padding: var(--space-10); text-align: center; position: relative; overflow: hidden; border-radius: var(--radius-xl);">
-          <div class="orb orb-purple" style="top: -20%; left:-10%; width: 200px; height: 200px;"></div>
-          
-          <div class="progress-bar mb-8" style="background: var(--bg-card); height: 8px; border-radius: 4px; overflow: hidden;">
-            <div id="fb-progress" style="width: 33%; height: 100%; background: var(--gradient-primary); transition: width 0.3s ease;"></div>
-          </div>
+        <!-- Quiz Container -->
+        <div id="fb-quiz-container" style="display: none; padding-top: 40px;">
+          <div class="glass-strong" style="padding: 48px; position: relative; border-radius: 24px; overflow: hidden;">
+            <div id="progress-container" style="margin-bottom: 40px;">
+               <div style="display: flex; justify-content: space-between; font-size: 12px; color: var(--text-tertiary); margin-bottom: 8px;">
+                 <span>ASSESSMENT PROGRESS</span>
+                 <span id="progress-text">Question 1/3</span>
+               </div>
+               <div style="background: rgba(255,255,255,0.05); height: 6px; border-radius: 3px;">
+                 <div id="fb-progress" style="width: 33%; height: 100%; background: var(--gradient-primary); border-radius: 3px; transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);"></div>
+               </div>
+            </div>
 
-          <h3 id="fb-question" style="font-size: var(--text-2xl); margin-bottom: var(--space-8); position: relative; z-index: 1;">
-            Question 1: The market crashes 20% in an hour. Your first instinct is to:
-          </h3>
-
-          <div class="grid grid-3" id="fb-options" style="position: relative; z-index: 1;">
-            <button class="btn btn-secondary fb-option" data-score="1" style="height: auto; min-height: 80px; white-space: normal;">Panic sell to prevent further losses</button>
-            <button class="btn btn-secondary fb-option" data-score="5" style="height: auto; min-height: 80px; white-space: normal;">Hold and wait for it to recover</button>
-            <button class="btn btn-secondary fb-option" data-score="10" style="height: auto; min-height: 80px; white-space: normal;">Buy the dip aggressively</button>
+            <div id="quiz-content" class="animate-fade-in">
+              <h2 id="fb-question" style="font-size: 28px; line-height: 1.4; margin-bottom: 40px; text-align: center;"></h2>
+              <div id="fb-options" style="display: grid; gap: 16px;"></div>
+            </div>
           </div>
         </div>
 
-        <!-- Result Stage -->
-        <div id="fb-result-stage" style="display: none;">
-          <div class="glass-strong" style="padding: var(--space-10); text-align: center; border-radius: var(--radius-xl);">
-            <div class="badge badge-warning mb-4"><span class="pulse-dot"></span> Analysis Complete</div>
-            <h2 class="text-3xl mb-2">You are <span id="fb-persona" class="text-gradient">The Strategic Holding</span></h2>
-            <p class="mb-8 text-secondary" id="fb-description">Your fear response is highly controlled. You trust data over emotion.</p>
+        <!-- Final Result -->
+        <div id="fb-result-container" style="display: none; padding-bottom: 60px;">
+          <div class="glass" style="padding: 0; overflow: hidden; border-radius: 24px;">
+            <div style="background: var(--gradient-primary); padding: 60px 40px; text-align: center; color: white;">
+               <div id="persona-icon" style="font-size: 64px; margin-bottom: 16px;">🐢</div>
+               <h3 style="text-transform: uppercase; letter-spacing: 2px; font-size: 14px; opacity: 0.8; margin-bottom: 8px;">Your Fear Persona is</h3>
+               <h2 id="persona-name" style="font-size: 42px; font-weight: 900; margin-bottom: 12px;">The Obsidian Turtle</h2>
+               <p id="persona-tagline" style="font-size: 18px; opacity: 0.9; max-width: 500px; margin: 0 auto;"></p>
+            </div>
             
-            <div class="radar-mockup mb-8" style="position: relative; height: 200px; display: flex; align-items: center; justify-content: center;">
-               <div style="width: 150px; height: 150px; border-radius: 50%; border: 2px dashed rgba(255, 255, 255, 0.2); position: absolute; animation: spin-slow 20s linear infinite;"></div>
-               <div style="width: 100px; height: 100px; border-radius: 50%; border: 2px dashed rgba(255, 255, 255, 0.4); position: absolute; animation: spin-slow 15s linear infinite reverse;"></div>
-               <div class="orb orb-cyan" style="width: 80px; height: 80px; filter: blur(30px);"></div>
-               <div style="z-index: 2; font-weight: 800; font-size: 24px; color: var(--accent-cyan); text-shadow: 0 0 10px rgba(0,212,255,0.8);">CONFIDENCE MATCH</div>
-            </div>
+            <div style="padding: 40px;">
+               <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 40px;">
+                  <div class="glass-strong" style="padding: 24px;">
+                    <h4 style="color: var(--accent-purple); font-size: 14px; margin-bottom: 12px;">CORE WEAKNESS</h4>
+                    <p id="persona-weakness" style="color: var(--text-secondary); line-height: 1.5;"></p>
+                  </div>
+                  <div class="glass-strong" style="padding: 24px;">
+                    <h4 style="color: var(--accent-cyan); font-size: 14px; margin-bottom: 12px;">AI STRATEGY</h4>
+                    <p id="persona-strategy" style="color: var(--text-secondary); line-height: 1.5;"></p>
+                  </div>
+               </div>
 
-            <div style="background: var(--bg-card); padding: var(--space-6); border-radius: var(--radius-lg); margin-bottom: var(--space-8); text-align: left;">
-              <h4 class="mb-4 flex items-center gap-2"><svg width="20" height="20" fill="none" stroke="var(--accent-purple)" stroke-width="2" viewBox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg> AI Combat Plan</h4>
-              <ul style="color: var(--text-secondary); margin-left: 20px; list-style: disc;">
-                <li class="mb-2">Run simulations on extreme high-volatility assets first.</li>
-                <li class="mb-2">Map out the absolute worst-case scenario visually.</li>
-                <li>Remove emotional trading by activating AutoMode for 1 week.</li>
-              </ul>
-            </div>
+               <div style="background: rgba(123, 97, 255, 0.05); padding: 32px; border-radius: 16px; border: 1px solid rgba(123, 97, 255, 0.2);">
+                 <h3 style="margin-bottom: 16px; display: flex; align-items: center; gap: 12px;">
+                   ${icons.zap}
+                   Your Personalized Combat Plan
+                 </h3>
+                 <ul id="combat-plan" style="display: grid; gap: 12px; color: var(--text-secondary);"></ul>
+               </div>
 
-            <a href="#/simulator" class="btn btn-primary btn-lg" style="width: 100%;">Initialize Confidence Simulation</a>
+               <div style="margin-top: 40px; display: flex; gap: 16px;">
+                 <a href="#/simulator" class="btn btn-primary btn-lg" style="flex: 1; justify-content: center;">Go to Simulator</a>
+                 <button id="retake-quiz" class="btn btn-secondary btn-lg">Retake Quiz</button>
+               </div>
+            </div>
           </div>
         </div>
       </div>
@@ -102,95 +105,147 @@ export function renderFearBreaker(container) {
   layout.appendChild(main);
   container.appendChild(layout);
 
-  // Mobile menu button
   const mobileSlot = main.querySelector('#mobile-menu-slot');
   mobileSlot.appendChild(createMobileMenuBtn());
 
+  // Quiz Logic
+  const intro = main.querySelector('#fb-intro');
+  const quizContainer = main.querySelector('#fb-quiz-container');
+  const resultContainer = main.querySelector('#fb-result-container');
+  const qText = main.querySelector('#fb-question');
+  const optsContainer = main.querySelector('#fb-options');
+  const progressBar = main.querySelector('#fb-progress');
+  const progressText = main.querySelector('#progress-text');
 
-  // --- Logic ---
   const questions = [
     {
-      q: "Question 1: The market crashes 20% in an hour. Your first instinct is to:",
+      q: "Your portfolio is down 20% in a single day due to market panic. What is your gut reaction?",
       opts: [
-        { t: "Panic sell everything", s: 1 },
-        { t: "Hold and wait", s: 5 },
-        { t: "Buy the dip aggressively", s: 10 }
+        { text: "Sell immediately to save what is left. I can't sleep.", score: 1 },
+        { text: "Do nothing. I believe it will recover eventually.", score: 5 },
+        { text: "This is a sale! I'm buying more with every dollar I have.", score: 10 }
       ]
     },
     {
-      q: "Question 2: You hear a friend doubled their money on a meme coin. You...",
+      q: "A close friend just made 10x ROI on a hype-coin. You missed it. How do you feel?",
       opts: [
-        { t: "Ignore it. Too risky.", s: 1 },
-        { t: "Research the fundamentals first", s: 5 },
-        { t: "Immediately invest $1000", s: 10 }
+        { text: "Happy for them, but I'm sticking to my boring safe plan.", score: 1 },
+        { text: "Slightly annoyed. I'll look for the next big project carefully.", score: 5 },
+        { text: "Extreme regret. I need to jump into the next thing NOW.", score: 10 }
       ]
     },
     {
-      q: "Question 3: When thinking about your retirement fund, you prioritize:",
+      q: "Which scenario sounds more terrifying to you?",
       opts: [
-        { t: "Zero risk of losing principal", s: 1 },
-        { t: "Steady, moderate growth", s: 5 },
-        { t: "Maximum potential returns", s: 10 }
+        { text: "Losing 50% of my initial investment in a month.", score: 1 },
+        { text: "Staying flat for 5 years while others get rich.", score: 10 }
       ]
     }
   ];
 
-  let currentQ = 0;
+  let currentStep = 0;
   let totalScore = 0;
 
-  const quizStage = container.querySelector('#fb-quiz-stage');
-  const resultStage = container.querySelector('#fb-result-stage');
-  const qText = container.querySelector('#fb-question');
-  const optsContainer = container.querySelector('#fb-options');
-  const progressBar = container.querySelector('#fb-progress');
+  main.querySelector('#start-quiz').onclick = () => {
+    intro.style.display = 'none';
+    quizContainer.style.display = 'block';
+    renderQuestion();
+  };
 
-  function renderQuestion(idx) {
-    if (idx >= questions.length) {
-      showResults();
-      return;
-    }
-    const q = questions[idx];
+  function renderQuestion() {
+    const q = questions[currentStep];
     qText.textContent = q.q;
-    progressBar.style.width = `${((idx + 1) / questions.length) * 100}%`;
-    
+    progressText.textContent = `Question ${currentStep + 1}/${questions.length}`;
+    progressBar.style.width = `${((currentStep + 1) / questions.length) * 100}%`;
+
     optsContainer.innerHTML = '';
     q.opts.forEach(opt => {
       const btn = document.createElement('button');
-      btn.className = 'btn btn-secondary fb-option animate-fade-in-up';
-      btn.style.height = 'auto';
-      btn.style.minHeight = '80px';
-      btn.style.whiteSpace = 'normal';
-      btn.textContent = opt.t;
-      btn.dataset.score = opt.s;
+      btn.className = 'btn btn-secondary fb-option animate-scale-in';
+      btn.style.padding = '24px';
+      btn.style.textAlign = 'left';
+      btn.style.fontSize = '16px';
+      btn.style.lineHeight = '1.4';
+      btn.innerHTML = `${opt.text}`;
       
-      btn.addEventListener('click', () => {
-        totalScore += opt.s;
-        currentQ++;
-        renderQuestion(currentQ);
-      });
+      btn.onclick = () => {
+        totalScore += opt.score;
+        currentStep++;
+        if (currentStep < questions.length) {
+          renderQuestion();
+        } else {
+          showResults();
+        }
+      };
       optsContainer.appendChild(btn);
     });
   }
 
   function showResults() {
-    quizStage.style.display = 'none';
-    resultStage.style.display = 'block';
-    resultStage.classList.add('animate-fade-in');
+    quizContainer.style.display = 'none';
+    resultContainer.style.display = 'block';
+    
+    const personaName = main.querySelector('#persona-name');
+    const personaIcon = main.querySelector('#persona-icon');
+    const personaTagline = main.querySelector('#persona-tagline');
+    const weakness = main.querySelector('#persona-weakness');
+    const strategy = main.querySelector('#persona-strategy');
+    const plan = main.querySelector('#combat-plan');
 
-    const personaEl = container.querySelector('#fb-persona');
-    const descEl = container.querySelector('#fb-description');
-
-    if (totalScore <= 6) {
-      personaEl.textContent = "The Cautious Saver";
-      descEl.textContent = "Your primary fear is wealth destruction. You need our Simulator to prove that controlled minimal risks mathematically outperform inflation.";
+    let pData;
+    if (totalScore <= 7) {
+      pData = {
+        name: "The Obsidian Turtle",
+        icon: "🐢",
+        tagline: "Driven by the fear of loss. You prioritize absolute security over growth.",
+        weakness: "Hyper-conservative bias. You miss out on 90% of market gains due to inaction.",
+        strategy: "Statistical exposure. Use our Simulator to realize that 0% risk is actually high-risk due to inflation.",
+        steps: [
+          "Set up a 10% 'Play Fund' to practice losing small amounts comfortably.",
+          "Use the Simulator to map a 10-year growth vs. inflation chart.",
+          "Activate 'AutoMode' for low-risk index tracking to remove decision fatigue."
+        ]
+      };
     } else if (totalScore <= 18) {
-      personaEl.textContent = "The Strategic Balancer";
-      descEl.textContent = "You fear unpredictable volatility rather than risk itself. AutoMode will be your best friend by systematically managing your exposure.";
+      pData = {
+        name: "The Calculated Sniper",
+        icon: "🎯",
+        tagline: "Strategic and patient. You only fear the variables you haven't mapped yet.",
+        weakness: "Analysis Paralysis. You often wait for the 'perfect' entry that never comes.",
+        strategy: "Binary execution. Use our AI Advisor to validate your entry points and act decisively.",
+        steps: [
+          "Upload your charts to 'Trade Vision' for secondary validation.",
+          "Implement a 'DCA' (Dollar Cost Averaging) strategy to automate entries.",
+          "Set strict Take-Profit and Stop-Loss levels in the simulator."
+        ]
+      };
     } else {
-      personaEl.textContent = "The FOMO Victim";
-      descEl.textContent = "You don't fear losing money, you fear missing out. Your biggest risk is overexposure. The AI Advisor will help you construct disciplined boundaries.";
+      pData = {
+        name: "The Fearless Raider",
+        icon: "⚡",
+        tagline: "Driven by the fear of missing out (FOMO). You are a high-octane opportunist.",
+        weakness: "Over-leveraging and emotional chasing. You risk total liquidation for quick dopamine.",
+        strategy: "Emotional Decoupling. You need systemic boundaries to protect your capital from your own impulses.",
+        steps: [
+          "Run 'Worst Case' simulations before every trade to ground your expectations.",
+          "Cap single-asset exposure to maximum 15% of total portfolio.",
+          "Consult the AI Advisor's 'Risk Probability' score before clicking Buy."
+        ]
+      };
     }
+
+    personaName.textContent = pData.name;
+    personaIcon.textContent = pData.icon;
+    personaTagline.textContent = pData.tagline;
+    weakness.textContent = pData.weakness;
+    strategy.textContent = pData.strategy;
+    plan.innerHTML = pData.steps.map(s => `<li>• ${s}</li>`).join('');
   }
 
-  renderQuestion(currentQ);
+  main.querySelector('#retake-quiz').onclick = () => {
+    currentStep = 0;
+    totalScore = 0;
+    resultContainer.style.display = 'none';
+    intro.style.display = 'block';
+  };
 }

@@ -1,14 +1,17 @@
 import { createSidebar, createMobileMenuBtn } from '../components/sidebar.js';
 import { drawLineChart } from '../components/chart.js';
-import { icons } from '../utils/helpers.js';
+import { icons, formatCurrency } from '../utils/helpers.js';
 import { getStockTimeSeries, getMarketStockPrice } from '../services/finnhub.js';
+import { getCoinHistory, getCoinPrice } from '../services/crypto.js';
+import { getAIAssetVerdict } from '../utils/gemini.js';
 
 export async function renderStockDetail(container) {
   container.innerHTML = '';
   
-  // Extract symbol from hash e.g. #/stock?symbol=AAPL
+  // Extract symbol from hash e.g. #/stock?symbol=AAPL&type=crypto
   const hashObj = new URLSearchParams(window.location.hash.split('?')[1]);
   const symbol = hashObj.get('symbol') || 'IBM';
+  const assetType = hashObj.get('type') || 'stock';
 
   const layout = document.createElement('div');
   layout.className = 'dashboard-layout';
@@ -29,30 +32,71 @@ export async function renderStockDetail(container) {
           </svg>
           Back
         </a>
-        <h1 class="top-navbar-title">${symbol} Detail</h1>
+        <h1 class="top-navbar-title">${symbol.toUpperCase()} Detail</h1>
       </div>
     </div>
 
     <div class="dashboard-content">
-      <div class="glass" style="padding:var(--space-4); margin-bottom:var(--space-4); border-radius:16px;">
-        <div style="display:flex;justify-content:space-between;align-items:center;">
-          <div>
-            <h2 style="font-size:1.5rem;margin:0;color:var(--text-primary);">${symbol}</h2>
-            <div id="stock-detail-price" style="font-size:2rem;font-weight:700;margin-top:8px;">Loading...</div>
+      <div class="asset-detail-grid" style="display: grid; grid-template-columns: 2fr 1fr; gap: 24px;">
+        <!-- Left: Chart & Info -->
+        <div>
+          <div class="glass" style="padding:var(--space-4); margin-bottom:var(--space-4); border-radius:16px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <div>
+                <h2 style="font-size:1.5rem;margin:0;color:var(--text-primary);">${symbol.toUpperCase()}</h2>
+                <div id="stock-detail-price" style="font-size:2rem;font-weight:700;margin-top:8px;">Loading...</div>
+              </div>
+              <div class="chart-tabs">
+                <button class="market-tab active" data-range="intraday">Intraday</button>
+                <button class="market-tab" data-range="daily">Daily</button>
+                <button class="market-tab" data-range="weekly">Weekly</button>
+              </div>
+            </div>
           </div>
-          <div class="chart-tabs">
-            <button class="market-tab active" data-range="intraday">Intraday</button>
-            <button class="market-tab" data-range="daily">Daily</button>
-            <button class="market-tab" data-range="weekly">Weekly</button>
-            <button class="market-tab" data-range="monthly">Monthly</button>
+
+          <div class="glass" style="padding:var(--space-4); border-radius:16px; height: 400px; position:relative;">
+            <canvas id="stock-detail-chart" style="width: 100%; height: 100%;"></canvas>
+            <div id="chart-loader" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:var(--text-tertiary);">
+              Loading chart data...
+            </div>
           </div>
         </div>
-      </div>
 
-      <div class="glass" style="padding:var(--space-4); border-radius:16px; height: 400px; position:relative;">
-        <canvas id="stock-detail-chart" style="width: 100%; height: 100%;"></canvas>
-        <div id="chart-loader" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:var(--text-tertiary);">
-          Loading chart data...
+        <!-- Right: AI Verdict -->
+        <div class="ai-verdict-sidebar">
+          <div class="glass" style="padding: 24px; height: 100%;">
+            <h3 style="display: flex; align-items: center; gap: 8px; margin-bottom: 24px;">
+              ${icons.sparkles}
+              AI Expert Verdict
+            </h3>
+
+            <div id="ai-verdict-status" style="text-align: center; margin-bottom: 24px;">
+               <div class="loading-pulse" style="height: 100px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.03); border-radius: 12px; color: var(--text-tertiary);">
+                 Analyzing Trends...
+               </div>
+            </div>
+
+            <div id="ai-verdict-result" style="display: none;">
+               <div id="verdict-badge" style="font-size: 32px; font-weight: 900; text-align: center; padding: 16px; border-radius: 12px; margin-bottom: 16px;">
+                 HOLD
+               </div>
+               
+               <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
+                 <span style="font-size: 12px; color: var(--text-tertiary);">AI CONFIDENCE</span>
+                 <span id="verdict-confidence" style="font-weight: 700;">85%</span>
+               </div>
+
+               <div style="background: rgba(255,255,255,0.03); padding: 16px; border-radius: 12px; margin-bottom: 24px;">
+                 <h4 style="font-size: 12px; color: var(--accent-purple); margin-bottom: 8px;">REASONING</h4>
+                 <p id="verdict-reasoning" style="font-size: 14px; color: var(--text-secondary); line-height: 1.5;"></p>
+               </div>
+
+               <div style="display: flex; flex-direction: column; gap: 8px;">
+                 <div id="verdict-level-1" style="font-size: 12px; font-weight: 600; padding: 8px; background: rgba(16, 185, 129, 0.1); border-radius: 6px; color: #10b981;"></div>
+                 <div id="verdict-level-2" style="font-size: 12px; font-weight: 600; padding: 8px; background: rgba(239, 68, 68, 0.1); border-radius: 6px; color: #ef4444;"></div>
+               </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -61,111 +105,115 @@ export async function renderStockDetail(container) {
   layout.appendChild(main);
   container.appendChild(layout);
 
-  // Mobile menu
   const mobileSlot = main.querySelector('#mobile-menu-slot');
   mobileSlot.appendChild(createMobileMenuBtn());
 
-  // Logic
   const priceEl = main.querySelector('#stock-detail-price');
   const canvas = main.querySelector('#stock-detail-chart');
   const loader = main.querySelector('#chart-loader');
   const tabs = main.querySelectorAll('.market-tab');
+  
+  const verdictStatus = main.querySelector('#ai-verdict-status');
+  const verdictResult = main.querySelector('#ai-verdict-result');
 
-  // Load current price
-  getMarketStockPrice(symbol).then(data => {
-    if (data && data.price) {
-      const isUp = data.change >= 0;
-      priceEl.innerHTML = `
-        $${data.price.toFixed(2)} 
-        <span style="font-size:1rem;color:${isUp ? 'var(--success)' : 'var(--danger)'};">
-          ${isUp ? '+' : ''}${data.change.toFixed(2)}%
-        </span>`;
+  // Load Current Price
+  async function fetchPrice() {
+    let data;
+    if (assetType === 'crypto') {
+      data = await getCoinPrice(symbol);
+      if (data) {
+        const isUp = data.change24h >= 0;
+        priceEl.innerHTML = `
+          ${formatCurrency(data.price)} 
+          <span style="font-size:1rem;color:${isUp ? '#10b981' : '#ef4444'};">
+            ${isUp ? '+' : ''}${data.change24h.toFixed(2)}%
+          </span>`;
+      }
     } else {
-      priceEl.textContent = 'Price data unavailable';
+      data = await getMarketStockPrice(symbol);
+      if (data) {
+        const isUp = data.change >= 0;
+        priceEl.innerHTML = `
+          $${data.price.toFixed(2)} 
+          <span style="font-size:1rem;color:${isUp ? '#10b981' : '#ef4444'};">
+            ${isUp ? '+' : ''}${data.change.toFixed(2)}%
+          </span>`;
+      }
     }
-  });
+  }
 
-  // Load chart
+  // Load Chart Data
   async function loadChart(range) {
     loader.style.display = 'block';
-    
-    // Clear canvas
     const ctx = canvas.getContext('2d');
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    const series = await getStockTimeSeries(symbol, range);
+    let series;
+    if (assetType === 'crypto') {
+      const days = range === 'intraday' ? 1 : range === 'daily' ? 7 : 30;
+      series = await getCoinHistory(symbol, days);
+    } else {
+      series = await getStockTimeSeries(symbol, range);
+    }
+
     loader.style.display = 'none';
 
     if (series && series.length > 0) {
       const prices = series.map(d => d.price);
-      
-      const dates = series.map((d) => {
-         if (range === 'intraday') {
-            const time = d.date.split(' ')[1]; // "YYYY-MM-DD HH:MM:SS" -> "HH:MM:SS"
-            return time ? time.slice(0, 5) : d.date; // "HH:MM"
-         } else if (range === 'daily') {
-            // "YYYY-MM-DD" -> "MMM DD, YYYY"
-            const parts = d.date.split('-');
-            if (parts.length === 3) {
-              const dateObj = new Date(d.date);
-              return dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-            }
-         } else if (range === 'weekly') {
-            // "YYYY-MM-DD" -> "MMM DD" (omit year to fit everything cleanly)
-            const parts = d.date.split('-');
-            if (parts.length === 3) {
-              const dateObj = new Date(d.date);
-              return dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-            }
-         } else if (range === 'monthly') {
-            // "YYYY-MM-DD" -> "MMM YYYY"
-            const parts = d.date.split('-');
-            if (parts.length === 3) {
-              const dateObj = new Date(d.date);
-              return dateObj.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
-            }
-         }
-         return d.date;
-      });
-
-      // Calculate perfect steps alignment requested
-      let stepsToDraw = 6;
-      if (range === 'intraday') {
-         stepsToDraw = 8;
-      } else if (range === 'daily') {
-         // Gap of ~14 days (10 to 15 requested)
-         stepsToDraw = Math.floor(prices.length / 14); 
-      } else if (range === 'weekly') {
-         stepsToDraw = prices.length; // precisely every week
-      } else if (range === 'monthly') {
-         stepsToDraw = prices.length; // precisely every month
-      }
+      const dates = series.map(d => d.date);
 
       drawLineChart(canvas, {
         data: prices,
         labels: dates,
-        xSteps: stepsToDraw,
         lineColor: prices[prices.length - 1] > prices[0] ? '#10b981' : '#ef4444',
         gradientStart: prices[prices.length - 1] > prices[0] ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.15)',
         gradientEnd: 'rgba(0,0,0,0)',
         animate: true,
       });
+
+      // Run AI Diagnosis once data is ready
+      runAnalysis(prices);
     } else {
-      loader.textContent = 'AlphaVantage Rate Limit / No Data';
-      loader.style.display = 'block';
+      loader.textContent = 'Data Limit Reached / Fetching...';
     }
   }
 
-  // Bind tabs
+  async function runAnalysis(history) {
+    const currentPrice = priceEl.textContent.split(' ')[0];
+    const data = await getAIAssetVerdict(symbol, currentPrice, history.slice(-5), assetType);
+
+    if (data) {
+      verdictStatus.style.display = 'none';
+      verdictResult.style.display = 'block';
+      
+      const badge = main.querySelector('#verdict-badge');
+      badge.textContent = data.verdict;
+      
+      const colors = {
+        BUY: { bg: 'rgba(16, 185, 129, 0.2)', text: '#10b981' },
+        SELL: { bg: 'rgba(239, 68, 68, 0.2)', text: '#ef4444' },
+        HOLD: { bg: 'rgba(245, 158, 11, 0.2)', text: '#f59e0b' }
+      };
+      
+      const colorSet = colors[data.verdict] || colors.HOLD;
+      badge.style.background = colorSet.bg;
+      badge.style.color = colorSet.text;
+      
+      main.querySelector('#verdict-confidence').textContent = `${data.confidence}%`;
+      main.querySelector('#verdict-reasoning').textContent = data.reasoning;
+      main.querySelector('#verdict-level-1').textContent = data.keyLevels[0] || '';
+      main.querySelector('#verdict-level-2').textContent = data.keyLevels[1] || '';
+    }
+  }
+
   tabs.forEach(tab => {
     tab.addEventListener('click', (e) => {
       tabs.forEach(t => t.classList.remove('active'));
       e.target.classList.add('active');
-      const range = e.target.dataset.range;
-      loadChart(range);
+      loadChart(e.target.dataset.range);
     });
   });
 
-  // Initial load
+  fetchPrice();
   loadChart('intraday');
 }

@@ -4,7 +4,10 @@
 
 import { createSidebar, createMobileMenuBtn } from '../components/sidebar.js';
 import { drawSimulatorChart } from '../components/chart.js';
-import { icons, formatCurrency } from '../utils/helpers.js';
+import { icons, formatCurrency, debounce } from '../utils/helpers.js';
+import { runAISimulation } from '../utils/gemini.js';
+import { searchStocks } from '../services/yahoo.js';
+import { getCryptoMarketData } from '../services/crypto.js';
 
 export function renderSimulator(container) {
   container.innerHTML = '';
@@ -69,7 +72,18 @@ export function renderSimulator(container) {
 
           <div class="sim-field">
             <div class="sim-field-label">
-              <span>Risk Level</span>
+              <span>Select Assets to Simulate</span>
+            </div>
+            <div class="asset-search-wrapper" style="position:relative;">
+              <input type="text" class="market-search-input" id="asset-search" placeholder="Search Stocks or Crypto..." />
+              <div id="asset-search-results" class="search-dropdown" style="display:none; top: 100%; width: 100%;"></div>
+            </div>
+            <div id="selected-assets" class="selected-assets-chips" style="display:flex; flex-wrap:wrap; gap:8px; margin-top:12px;"></div>
+          </div>
+
+          <div class="sim-field">
+            <div class="sim-field-label">
+              <span>Risk Appetite</span>
             </div>
             <div class="risk-toggle" id="risk-toggle">
               <button class="risk-level-btn active safe" data-level="safe">Safe</button>
@@ -80,7 +94,7 @@ export function renderSimulator(container) {
 
           <button class="btn btn-primary btn-lg sim-run-btn" id="sim-run">
             ${icons.zap}
-            Run Simulation
+            Run AI Simulation
           </button>
         </div>
 
@@ -97,19 +111,19 @@ export function renderSimulator(container) {
           <!-- Scenario Cards -->
           <div class="scenario-cards" id="scenario-cards">
             <div class="scenario-card glass safe">
-              <div class="scenario-label">Conservative</div>
-              <div class="scenario-value" id="scenario-safe-val">—</div>
-              <div class="scenario-return">Estimated return</div>
+              <div class="scenario-label">Win Probability</div>
+              <div class="scenario-value" id="sim-win-prob">—</div>
+              <div class="scenario-return">Based on AI logic</div>
             </div>
             <div class="scenario-card glass moderate">
-              <div class="scenario-label">Moderate</div>
-              <div class="scenario-value" id="scenario-mod-val">—</div>
-              <div class="scenario-return">Estimated return</div>
+              <div class="scenario-label">Expected Return</div>
+              <div class="scenario-value" id="sim-exp-return">—</div>
+              <div class="scenario-return">Annual projection</div>
             </div>
             <div class="scenario-card glass aggressive">
-              <div class="scenario-label">Aggressive</div>
-              <div class="scenario-value" id="scenario-agg-val">—</div>
-              <div class="scenario-return">Estimated return</div>
+              <div class="scenario-label">Risk Score</div>
+              <div class="scenario-value" id="sim-risk-score">—</div>
+              <div class="scenario-return">Volatility index</div>
             </div>
           </div>
 
@@ -152,6 +166,75 @@ export function renderSimulator(container) {
   let amount = 10000;
   let period = 3;
   let riskLevel = 'safe';
+  let selectedAssets = [{ symbol: 'BTC', name: 'Bitcoin' }, { symbol: 'AAPL', name: 'Apple Inc.' }];
+  let allCrypto = [];
+
+  // Fetch crypto for search
+  getCryptoMarketData().then(data => { if(data) allCrypto = data; });
+
+  const selectedContainer = main.querySelector('#selected-assets');
+  const searchInput = main.querySelector('#asset-search');
+  const searchResults = main.querySelector('#asset-search-results');
+
+  function renderChips() {
+    selectedContainer.innerHTML = selectedAssets.map(asset => `
+      <div class="asset-chip glass-strong" style="padding: 4px 12px; border-radius: 20px; font-size: 12px; display: flex; align-items: center; gap: 8px;">
+        <span>${asset.symbol}</span>
+        <button class="remove-asset" data-symbol="${asset.symbol}" style="background:none; border:none; color:var(--text-tertiary); cursor:pointer;">&times;</button>
+      </div>
+    `).join('');
+
+    selectedContainer.querySelectorAll('.remove-asset').forEach(btn => {
+      btn.addEventListener('click', () => {
+        selectedAssets = selectedAssets.filter(a => a.symbol !== btn.dataset.symbol);
+        renderChips();
+      });
+    });
+  }
+
+  renderChips();
+
+  // Handle asset search
+  const performSearch = debounce(async (query) => {
+    if (!query) {
+      searchResults.style.display = 'none';
+      return;
+    }
+
+    const stocks = await searchStocks(query);
+    const filteredCrypto = allCrypto.filter(c => 
+      c.name.toLowerCase().includes(query.toLowerCase()) || 
+      c.symbol.toLowerCase().includes(query.toLowerCase())
+    ).slice(0, 5);
+
+    const merged = [...stocks, ...filteredCrypto.map(c => ({ symbol: c.symbol, name: c.name }))];
+
+    if (merged.length > 0) {
+      searchResults.style.display = 'block';
+      searchResults.innerHTML = merged.map(item => `
+        <div class="search-dropdown-item add-asset-btn" data-symbol="${item.symbol}" data-name="${item.name}">
+          <span>${item.symbol}</span>
+          <span style="font-size:10px; color:var(--text-tertiary); margin-left:8px;">${item.name}</span>
+        </div>
+      `).join('');
+
+      searchResults.querySelectorAll('.add-asset-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const sym = btn.dataset.symbol;
+          if (!selectedAssets.find(a => a.symbol === sym)) {
+            selectedAssets.push({ symbol: sym, name: btn.dataset.name });
+            renderChips();
+          }
+          searchResults.style.display = 'none';
+          searchInput.value = '';
+        });
+      });
+    } else {
+      searchResults.style.display = 'none';
+    }
+  }, 400);
+
+  searchInput.addEventListener('input', (e) => performSearch(e.target.value));
 
   // Amount slider
   const amountSlider = main.querySelector('#sim-amount');
@@ -183,48 +266,55 @@ export function renderSimulator(container) {
 
   // Run simulation
   const runBtn = main.querySelector('#sim-run');
-  runBtn.addEventListener('click', () => {
-    // Animate chart
-    const chartCanvas = document.getElementById('sim-chart');
-    if (chartCanvas) {
-      drawSimulatorChart(chartCanvas);
+  const winProbEl = main.querySelector('#sim-win-prob');
+  const expReturnEl = main.querySelector('#sim-exp-return');
+  const riskScoreEl = main.querySelector('#sim-risk-score');
+  const aiTextEl = main.querySelector('#ai-explanation-text');
+
+  runBtn.addEventListener('click', async () => {
+    if (selectedAssets.length === 0) {
+      alert("Please add at least one asset to simulate.");
+      return;
     }
 
-    // Update scenarios
-    const multipliers = {
-      safe: { low: 1.03, mid: 1.05, high: 1.08 },
-      moderate: { low: 1.05, mid: 1.10, high: 1.15 },
-      aggressive: { low: 1.08, mid: 1.18, high: 1.25 },
-    };
+    runBtn.innerHTML = `<span class="loading-spinner"></span> Generating AI Analysis...`;
+    runBtn.classList.add('loading');
+    runBtn.style.pointerEvents = 'none';
 
-    const m = multipliers[riskLevel];
-    const safeVal = amount * Math.pow(m.low, period);
-    const modVal = amount * Math.pow(m.mid, period);
-    const aggVal = amount * Math.pow(m.high, period);
+    // Animate chart
+    const chartCanvas = document.getElementById('sim-chart');
+    if (chartCanvas) drawSimulatorChart(chartCanvas);
 
-    document.getElementById('scenario-safe-val').textContent = formatCurrency(safeVal);
-    document.getElementById('scenario-mod-val').textContent = formatCurrency(modVal);
-    document.getElementById('scenario-agg-val').textContent = formatCurrency(aggVal);
+    // AI Call
+    const assetSymbols = selectedAssets.map(a => a.symbol);
+    const aiResult = await runAISimulation(assetSymbols, amount, period);
 
-    // Risk meter
-    const riskPct = { safe: 25, moderate: 55, aggressive: 85 };
-    document.getElementById('risk-meter-fill').style.width = `${riskPct[riskLevel]}%`;
+    if (aiResult) {
+      winProbEl.textContent = `${100 - aiResult.lossProbability}%`;
+      expReturnEl.textContent = `${aiResult.expectedReturn}%`;
+      riskScoreEl.textContent = `${aiResult.riskScore}/100`;
+      
+      aiTextEl.innerHTML = `
+        <p class="mb-4">${aiResult.analysisBrief}</p>
+        <div style="background: rgba(255,255,255,0.03); padding: 12px; border-radius: 8px;">
+          <h4 style="font-size: 13px; margin-bottom: 8px; color: var(--accent-purple);">Recommendations:</h4>
+          <ul style="list-style: disc; margin-left: 20px; font-size: 13px; color: var(--text-secondary);">
+            ${aiResult.recommendations.map(r => `<li class="mb-1">${r}</li>`).join('')}
+          </ul>
+        </div>
+      `;
 
-    // AI explanation
-    const explanations = {
-      safe: `Based on your ${formatCurrency(amount)} investment over ${period} year${period > 1 ? 's' : ''} with a conservative strategy, the simulation projects steady growth with minimal volatility. Historical data suggests a high probability of positive returns with limited downside risk. This strategy prioritizes capital preservation.`,
-      moderate: `Your ${formatCurrency(amount)} investment over ${period} year${period > 1 ? 's' : ''} with moderate risk shows balanced growth potential. The simulation ran 10,000 scenarios and found a favorable risk-reward ratio. You can expect moderate volatility with strong long-term growth prospects. Diversification across asset classes is recommended.`,
-      aggressive: `With ${formatCurrency(amount)} invested over ${period} year${period > 1 ? 's' : ''} at high risk, the simulation shows significant growth potential alongside higher volatility. While the upside is substantial, be prepared for market corrections of 15-30%. This strategy is best for investors with high risk tolerance and long time horizons.`,
-    };
-    document.getElementById('ai-explanation-text').textContent = explanations[riskLevel];
+      // Update risk meter
+      document.getElementById('risk-meter-fill').style.width = `${aiResult.riskScore}%`;
+    }
 
     // Run button feedback
-    runBtn.textContent = 'Simulation Complete ✓';
-    runBtn.style.pointerEvents = 'none';
+    runBtn.innerHTML = `Simulation Complete ✓`;
     setTimeout(() => {
-      runBtn.innerHTML = `${icons.zap} Run Simulation`;
+      runBtn.innerHTML = `${icons.zap} Run AI Simulation`;
       runBtn.style.pointerEvents = '';
-    }, 2000);
+      runBtn.classList.remove('loading');
+    }, 3000);
   });
 
   // Initial chart

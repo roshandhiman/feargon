@@ -13,6 +13,8 @@ export class Router {
     this._onHashChange = this._onHashChange.bind(this);
     this.lastUser = null;
     
+    this.currentCleanup = null;
+    
     // Auto-update routing when user session/store changes
     store.subscribe(() => {
       this._onHashChange();
@@ -76,6 +78,16 @@ export class Router {
     const handler = this.routes[path] || this.routes['/'];
 
     if (handler) {
+      // 1. Run cleanup from previous page
+      if (typeof this.currentCleanup === 'function') {
+        try {
+          this.currentCleanup();
+        } catch (e) {
+          console.error('Cleanup error:', e);
+        }
+        this.currentCleanup = null;
+      }
+
       // Page exit animation
       this.appEl.classList.remove('page-active');
       this.appEl.classList.add('page-enter');
@@ -84,7 +96,12 @@ export class Router {
 
       // Clear and render
       this.appEl.innerHTML = '';
-      await handler(this.appEl);
+      
+      // 2. Render new page and capture its cleanup function
+      const cleanup = await handler(this.appEl);
+      if (typeof cleanup === 'function') {
+        this.currentCleanup = cleanup;
+      }
       
       // Parse translations for newly injected elements
       i18n.parse(this.appEl);

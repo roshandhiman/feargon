@@ -13,15 +13,14 @@ const COIN_ID_MAP = {
 };
 
 /**
- * Fetch market data for our crypto list
- * Returns array of { id, symbol, name, current_price, price_change_percentage_24h, sparkline_in_7d }
+ * Fetch market data for a large list of cryptos
+ * Returns array of objects with standard fields
  */
 export const getCryptoMarketData = async () => {
-  const ids = Object.values(COIN_ID_MAP).join(',');
-
   try {
+    // We pass per_page=500 and ids=all to get the broad market
     const res = await fetch(
-      `/api/proxy/crypto?type=market&ids=${ids}`
+      `/api/proxy/crypto?type=market&ids=all&per_page=500`
     );
 
     if (!res.ok) {
@@ -84,6 +83,26 @@ export const getCoinPrice = async (coinId = 'bitcoin') => {
     };
   } catch (error) {
     console.error('Error fetching coin price:', error);
+    return null;
+  }
+};
+
+/**
+ * Fetch historical data for a specific coin
+ */
+export const getCoinHistory = async (coinId, days = 7) => {
+  try {
+    const res = await fetch(`/api/proxy/crypto?type=history&ids=${coinId}&days=${days}`);
+    if (!res.ok) throw new Error("History fetch failed");
+    const data = await res.json();
+    
+    // Transform to standard { date, price } format
+    return data.prices.map(p => ({
+      date: new Date(p[0]).toISOString().split('T')[0],
+      price: p[1]
+    }));
+  } catch (error) {
+    console.error('Error fetching coin history:', error);
     return null;
   }
 };

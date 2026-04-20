@@ -117,6 +117,13 @@ export function renderDashboard(container) {
                 </div>
                 <div class="action-label" data-i18n="lbl.chat">AI Chat</div>
               </a>
+
+              <button class="quick-action-btn hover-lift" id="action-connect-groww" style="border: 2px solid var(--accent-green);">
+                <div class="action-icon" style="background: var(--accent-green); color: white;">
+                  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+                </div>
+                <div class="action-label" style="color: var(--accent-green); font-weight: 800;">Connect Groww</div>
+              </button>
             </div>
           </div>
 
@@ -185,6 +192,25 @@ export function renderDashboard(container) {
   // Mobile menu button
   const mobileSlot = main.querySelector('#mobile-menu-slot');
   mobileSlot.appendChild(createMobileMenuBtn());
+
+  // Connect Groww Demo
+  const growwBtn = main.querySelector('#action-connect-groww');
+  growwBtn.addEventListener('click', () => {
+    growwBtn.innerHTML = `<span class="loading-spinner"></span> Connecting...`;
+    setTimeout(() => {
+      import('../components/toast.js').then(({ showToast }) => {
+        showToast('Successfully linked your Groww portfolio! Analyzing assets...', { type: 'success' });
+        growwBtn.innerHTML = `
+          <div class="action-icon" style="background: var(--accent-green); color: white;">
+             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          </div>
+          <div class="action-label" style="color: var(--accent-green); font-weight: 800;">Groww Linked</div>
+        `;
+        document.getElementById('portfolio-value').textContent = formatCurrency(425890.45);
+        document.getElementById('portfolio-change').innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="17 11 12 6 7 11"/><line x1="12" y1="18" x2="12" y2="6"/></svg><span>+12.4%</span>`;
+      });
+    }, 2000);
+  });
 
   // Render gauge initially handled asynchronously inside fetchPortfolio()
 
@@ -394,4 +420,8 @@ export function renderDashboard(container) {
   registerInterval(PAGE_NAME, fetchTopCrypto, 30_000);      // Crypto list every 30s
   registerInterval(PAGE_NAME, fetchPulseStocks, 60_000);    // Stock pulse every 60s
   registerInterval(PAGE_NAME, fetchTrendingStocks, 60_000); // Trending stocks every 60s
+
+  return () => {
+    clearPageIntervals(PAGE_NAME);
+  };
 }

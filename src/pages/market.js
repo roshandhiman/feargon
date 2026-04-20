@@ -12,14 +12,8 @@ import { registerInterval, clearPageIntervals, getCachedData, setCachedData, isC
 
 const PAGE_NAME = 'market';
 
-const cryptoAssets = [
-  { name: 'Bitcoin', symbol: 'BTC', color: '#f59e0b' },
-  { name: 'Ethereum', symbol: 'ETH', color: '#7b61ff' },
-  { name: 'Solana', symbol: 'SOL', color: '#00d4ff' },
-  { name: 'Cardano', symbol: 'ADA', color: '#3b82f6' },
-  { name: 'Polkadot', symbol: 'DOT', color: '#ec4899' },
-  { name: 'Chainlink', symbol: 'LINK', color: '#3b82f6' },
-];
+// We'll store the full live crypto list here once fetched
+let fullCryptoList = [];
 
 const stockAssets = [
   { name: 'Apple Inc.', symbol: 'AAPL', color: '#7b61ff' },
@@ -196,34 +190,37 @@ export function renderMarket(container) {
     });
   }
 
-  function renderCryptoAssets(assets, liveDataMap, searchTerm = '') {
+  function renderCryptoAssets(cryptoList, searchTerm = '') {
     const grid = main.querySelector('#asset-grid');
-    const filtered = assets.filter(a =>
+    const filtered = cryptoList.filter(a =>
       a.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       a.symbol.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    grid.innerHTML = filtered.map((asset, i) => {
-      const live = liveDataMap ? liveDataMap[asset.symbol] : null;
-      const priceText = live ? formatCurrency(live.price) : '—';
-      const changeVal = live ? live.change : null;
+    grid.innerHTML = filtered.slice(0, 100).map((coin, i) => {
+      const priceText = formatCurrency(coin.price);
+      const changeVal = coin.change24h;
       const changeText = changeVal != null
         ? `${changeVal >= 0 ? '+' : ''}${changeVal.toFixed(2)}%`
         : '—';
       const changeClass = changeVal != null
         ? (changeVal >= 0 ? 'positive' : 'negative')
         : '';
+        
+      // Generate a deterministic color based on symbol
+      const hue = coin.symbol.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) % 360;
+      const color = `hsl(${hue}, 70%, 60%)`;
 
       return `
-        <div class="asset-card glass hover-lift" data-index="${i}" style="animation-delay:${i * 50}ms;">
+        <a href="#/stock?symbol=${coin.id}&type=crypto" class="asset-card glass hover-lift" style="animation-delay:${i * 20}ms; text-decoration: none; color: inherit; display: flex; flex-direction: column;">
           <div class="asset-card-header">
             <div class="asset-info">
-              <div class="asset-icon" style="background:${asset.color}20; color:${asset.color};">
-                ${asset.symbol.slice(0, 2)}
+              <div class="asset-icon" style="background:${color}20; color:${color};">
+                ${coin.symbol.slice(0, 2)}
               </div>
               <div>
-                <div class="asset-name">${asset.name}</div>
-                <div class="asset-symbol">${asset.symbol}</div>
+                <div class="asset-name">${coin.name}</div>
+                <div class="asset-symbol">${coin.symbol}</div>
               </div>
             </div>
             <div class="asset-price">
@@ -231,28 +228,19 @@ export function renderMarket(container) {
               <div class="asset-price-change ${changeClass}">${changeText}</div>
             </div>
           </div>
-          <canvas class="asset-sparkline" id="sparkline-${asset.symbol}"></canvas>
-        </div>
+          <canvas class="asset-sparkline" id="sparkline-${coin.symbol}"></canvas>
+        </a>
       `;
     }).join('');
 
-    // Draw sparklines
+    // Draw sparklines for the first 20 to save performance
     requestAnimationFrame(() => {
-      filtered.forEach(asset => {
-        const canvas = document.getElementById(`sparkline-${asset.symbol}`);
+      filtered.slice(0, 20).forEach(coin => {
+        const canvas = document.getElementById(`sparkline-${coin.symbol}`);
         if (canvas) {
-          const live = liveDataMap ? liveDataMap[asset.symbol] : null;
-          let data;
-          if (live && live.sparkline && live.sparkline.length > 0) {
-            const spark = live.sparkline;
-            const step = Math.max(1, Math.floor(spark.length / 20));
-            data = [];
-            for (let i = 0; i < spark.length; i += step) {
-              data.push(spark[i]);
-            }
-          } else {
-            data = generateSmoothData(20, 0.6);
-          }
+          const data = coin.sparkline && coin.sparkline.length > 0 
+            ? coin.sparkline.filter((_, i) => i % 5 === 0) 
+            : generateSmoothData(20, 0.6);
           const isUp = data[data.length - 1] > data[0];
           drawSparkline(canvas, {
             data,
@@ -343,37 +331,20 @@ export function renderMarket(container) {
 
   // ===== DATA FETCHING =====
 
-  function buildCryptoMap(apiData) {
-    if (!apiData) return null;
-    const map = {};
-    apiData.forEach(coin => {
-      map[coin.symbol] = {
-        price: coin.price,
-        change: coin.change24h,
-        sparkline: coin.sparkline,
-      };
-    });
-    return map;
-  }
-
   async function fetchCryptoData() {
     if (isCacheValid('crypto')) {
-      cryptoData = buildCryptoMap(getCachedData('crypto'));
+      fullCryptoList = getCachedData('crypto');
     } else {
       const raw = await getCryptoMarketData();
       if (raw) {
         setCachedData('crypto', raw);
-        cryptoData = buildCryptoMap(raw);
+        fullCryptoList = raw;
       }
     }
 
     if (activeTab === 'crypto') {
       const search = main.querySelector('#market-search-input')?.value || '';
-      if (cryptoData) {
-        renderCryptoAssets(cryptoAssets, cryptoData, search);
-      } else {
-        renderError('Unable to fetch live crypto data. Please try again later.');
-      }
+      renderCryptoAssets(fullCryptoList, search);
     }
   }
 
@@ -423,10 +394,8 @@ export function renderMarket(container) {
       // Debounced Yahoo search
       debouncedSearch(query);
     } else {
-      // Crypto: filter locally
-      if (cryptoData) {
-        renderCryptoAssets(cryptoAssets, cryptoData, query);
-      }
+      // Crypto: filter locally from the full list
+      renderCryptoAssets(fullCryptoList, query);
     }
   });
 
@@ -448,9 +417,9 @@ export function renderMarket(container) {
           renderStockCards([]);
         }
       } else {
-        searchInput.placeholder = 'Search crypto...';
-        if (cryptoData) {
-          renderCryptoAssets(cryptoAssets, cryptoData);
+        searchInput.placeholder = 'Search 10,000+ cryptocurrencies...';
+        if (fullCryptoList.length > 0) {
+          renderCryptoAssets(fullCryptoList);
         } else {
           showLoadingGrid();
           fetchCryptoData();
@@ -458,4 +427,8 @@ export function renderMarket(container) {
       }
     });
   });
+
+  return () => {
+    clearPageIntervals(PAGE_NAME);
+  };
 }

@@ -11,6 +11,7 @@ const navItems = [
   { id: 'market', label: 'Market Explorer', icon: 'market', path: '/market' },
   { id: 'fearbreaker', label: 'Fear Profiler', icon: 'target', path: '/fearbreaker' },
   { id: 'simulator', label: 'Simulator', icon: 'simulator', path: '/simulator' },
+  { id: 'trade', label: 'Trade Vision', icon: 'chart', path: '/trade' },
   { id: 'advisor', label: 'AI Advisor', icon: 'advisor', path: '/advisor' },
   { id: 'automode', label: 'Full Access', icon: 'autoInvest', path: '/automode' },
 ];
@@ -64,6 +65,13 @@ export function createSidebar() {
           ${i18n.lang === 'en' ? 'EN' : 'HI'}
         </button>
       </div>
+
+      <div style="padding: 16px;">
+        <button id="connect-wallet" class="btn btn-primary" style="width:100%; justify-content:center; gap:8px;">
+          ${icons.autoInvest}
+          Connect Wallet
+        </button>
+      </div>
     </div>
   `;
 
@@ -92,6 +100,11 @@ export function createSidebar() {
     langBtn.textContent = i18n.lang === 'en' ? 'EN' : 'HI';
     // Re-render current page immediately safely
     window.location.reload(); 
+  });
+
+  const walletBtn = sidebar.querySelector('#connect-wallet');
+  walletBtn.addEventListener('click', () => {
+    alert("🔒 Blockchain connectivity is coming soon in the production release! Stay tuned for full portfolio management.");
   });
 
   // Update active state on navigation

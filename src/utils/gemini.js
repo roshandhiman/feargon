@@ -45,3 +45,56 @@ export async function getBotResponse(userMessage) {
         return "Network Error: Unable to connect to backend.";
     }
 }
+/**
+ * Run a multi-asset simulation analysis via AI
+ */
+export async function runAISimulation(assets, amount, period) {
+    try {
+        const response = await fetch('/api/simulate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ assets, amount, period })
+        });
+        const data = await response.json();
+        return data;
+    } catch (err) {
+        console.error("Simulation AI Error:", err);
+        return null;
+    }
+}
+
+/**
+ * Analyze a trading chart image via AI Vision
+ */
+export async function analyzeGraphVision(base64Image, tradeType = 'intraday') {
+    try {
+        const response = await fetch('/api/vision', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ image: base64Image, tradeType })
+        });
+        const data = await response.json();
+        return data;
+    } catch (err) {
+        console.error("Vision AI Error:", err);
+        return null;
+    }
+}
+
+/**
+ * Get AI analysis verdict (Buy/Hold/Sell) for an asset
+ */
+export async function getAIAssetVerdict(symbol, price, history, type = 'stock') {
+    try {
+        const response = await fetch('/api/analysis/verdict', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ symbol, price, history, type })
+        });
+        const data = await response.json();
+        return data;
+    } catch (err) {
+        console.error("Verdict AI Error:", err);
+        return null;
+    }
+}

@@ -10,37 +10,42 @@ export function initASMRBackground(canvas) {
   let particles = [];
   const mouse = { x: -1000, y: -1000 };
 
-  const PARTICLE_COUNT = 1000;
+  const PARTICLE_COUNT = 800; // Optimized for performance
   const MAGNETIC_RADIUS = 280;
+  const MAGNETIC_RADIUS_SQ = MAGNETIC_RADIUS * MAGNETIC_RADIUS;
   const VORTEX_STRENGTH = 0.07;
   const PULL_STRENGTH = 0.12;
 
   class Particle {
     constructor() {
-      this.reset();
+      this.reset(true);
     }
 
-    reset() {
-      this.x = Math.random() * width;
-      this.y = Math.random() * height;
+    reset(full = false) {
+      this.x = Math.random() * (width || window.innerWidth);
+      this.y = Math.random() * (height || window.innerHeight);
       this.size = Math.random() * 1.5 + 0.5;
       this.vx = (Math.random() - 0.5) * 0.2;
       this.vy = (Math.random() - 0.5) * 0.2;
-      // 70% Charcoal, 30% Glass
-      const isGlass = Math.random() > 0.7;
-      this.color = isGlass ? '240, 245, 255' : '80, 80, 85';
-      this.alpha = Math.random() * 0.4 + 0.1;
-      this.rotation = Math.random() * Math.PI * 2;
-      this.rotationSpeed = (Math.random() - 0.5) * 0.05;
+      
+      if (full) {
+        // 70% Charcoal, 30% Glass
+        const isGlass = Math.random() > 0.7;
+        this.color = isGlass ? '240, 245, 255' : '80, 80, 85';
+        this.alpha = Math.random() * 0.4 + 0.1;
+        this.rotation = Math.random() * Math.PI * 2;
+        this.rotationSpeed = (Math.random() - 0.5) * 0.05;
+      }
       this.frictionGlow = 0;
     }
 
     update() {
       const dx = mouse.x - this.x;
       const dy = mouse.y - this.y;
-      const dist = Math.sqrt(dx * dx + dy * dy);
+      const distSq = dx * dx + dy * dy;
 
-      if (dist < MAGNETIC_RADIUS) {
+      if (distSq < MAGNETIC_RADIUS_SQ) {
+        const dist = Math.sqrt(distSq) || 1; // Prevent division by zero
         const force = (MAGNETIC_RADIUS - dist) / MAGNETIC_RADIUS;
         
         // Magnetic center pull
@@ -72,19 +77,21 @@ export function initASMRBackground(canvas) {
       this.rotation += this.rotationSpeed + (Math.abs(this.vx) + Math.abs(this.vy)) * 0.05;
 
       // Screen wrap
-      if (this.x < -20) this.x = width + 20;
-      if (this.x > width + 20) this.x = -20;
-      if (this.y < -20) this.y = height + 20;
-      if (this.y > height + 20) this.y = -20;
+      if (this.x < -40) this.x = width + 40;
+      if (this.x > width + 40) this.x = -40;
+      if (this.y < -40) this.y = height + 40;
+      if (this.y > height + 40) this.y = -40;
     }
 
     draw() {
-      if (!ctx) return;
+      const finalAlpha = Math.min(this.alpha + this.frictionGlow, 0.9);
+      
+      // Optimization: Only save/restore if we need shadow or rotation
+      // Actually shards always need migration and rotation
       ctx.save();
       ctx.translate(this.x, this.y);
       ctx.rotate(this.rotation);
       
-      const finalAlpha = Math.min(this.alpha + this.frictionGlow, 0.9);
       ctx.fillStyle = `rgba(${this.color}, ${finalAlpha})`;
       
       if (this.frictionGlow > 0.3) {
@@ -108,15 +115,18 @@ export function initASMRBackground(canvas) {
   const init = () => {
     width = canvas.width = window.innerWidth;
     height = canvas.height = window.innerHeight;
-    particles = [];
-    for (let i = 0; i < PARTICLE_COUNT; i++) {
-      particles.push(new Particle());
+    
+    // Only populate if empty to prevent jumpiness on resize
+    if (particles.length === 0) {
+      for (let i = 0; i < PARTICLE_COUNT; i++) {
+        particles.push(new Particle());
+      }
     }
   };
 
-  const render = () => {
+  const render = (time) => {
     // Create slight motion blur effect
-    ctx.fillStyle = 'rgba(10, 10, 12, 0.18)'; // #0a0a0c with opacity
+    ctx.fillStyle = 'rgba(10, 10, 12, 0.18)'; 
     ctx.fillRect(0, 0, width, height);
 
     particles.forEach(p => {
@@ -128,14 +138,17 @@ export function initASMRBackground(canvas) {
   };
 
   const handleMouseMove = (e) => {
-    mouse.x = e.clientX;
-    mouse.y = e.clientY;
+    // Robust coordinate mapping
+    const rect = canvas.getBoundingClientRect();
+    mouse.x = e.clientX - rect.left;
+    mouse.y = e.clientY - rect.top;
   };
 
   const handleTouchMove = (e) => {
     if (e.touches[0]) {
-      mouse.x = e.touches[0].clientX;
-      mouse.y = e.touches[0].clientY;
+      const rect = canvas.getBoundingClientRect();
+      mouse.x = e.touches[0].clientX - rect.left;
+      mouse.y = e.touches[0].clientY - rect.top;
     }
   };
 
@@ -153,3 +166,4 @@ export function initASMRBackground(canvas) {
     if (animationFrameId) cancelAnimationFrame(animationFrameId);
   };
 }
+

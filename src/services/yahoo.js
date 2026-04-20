@@ -12,7 +12,7 @@ export const searchStocks = async (query) => {
 
         return data.quotes
             .filter((item) => item.quoteType === "EQUITY")
-            .slice(0, 5)
+            .slice(0, 15)
             .map((stock) => ({
                 symbol: stock.symbol,
                 name: stock.shortname,

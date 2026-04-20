@@ -272,6 +272,37 @@ h3 > svg, h4 > svg, p > svg, span > svg {
   background: var(--bg-card-hover);
 }
 
+/* --- Trade Vision Styles --- */
+.vision-scanner {
+  border: 2px dashed var(--border-accent);
+  position: relative;
+  overflow: hidden;
+}
+
+.vision-scanner::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 2px;
+  background: var(--accent-cyan);
+  animation: scan 2s linear infinite;
+}
+
+@keyframes scan {
+  100% { left: 100%; }
+}
+
+.loading-pulse {
+  animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .5; }
+}
+
 /* --- Button Styles --- */
 .btn {
   display: inline-flex;
@@ -587,4 +618,69 @@ h3 > svg, h4 > svg, p > svg, span > svg {
 .portfolio-change.negative,
 .pulse-value.negative {
   color: #ef4444 !important;
+}
+.loading-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: #fff;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.selected-assets-chips {
+  margin-bottom: 24px;
+}
+
+.asset-chip {
+  background: var(--bg-card);
+  border: 1px solid var(--border-default);
+  transition: all 0.2s ease;
+}
+
+.asset-chip:hover {
+  border-color: var(--accent-purple);
+  transform: translateY(-1px);
+}
+
+.search-dropdown {
+  position: absolute;
+  z-index: var(--z-dropdown);
+  background: var(--bg-glass-strong);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.search-dropdown-item {
+  padding: 12px 16px;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: background 0.2s ease;
+}
+
+.search-dropdown-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.trade-vision-grid {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+#drop-zone:hover {
+  border-color: var(--accent-purple) !important;
+  background: rgba(123, 97, 255, 0.05) !important;
+}
+
+.risk-level-btn.loading {
+  opacity: 0.7;
+  pointer-events: none;
 }

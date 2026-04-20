@@ -28,6 +28,7 @@ import { renderAutoMode } from './pages/automode.js';
 import { renderStockDetail } from './pages/stock.js';
 import { renderProfile } from './pages/profile.js';
 import { renderFearBreaker } from './pages/fearbreaker.js';
+import { renderTradeAnalysis } from './pages/tradeAnalysis.js';
 import { store } from './utils/store.js';
 
 // Apply Theme dynamically on load
@@ -61,7 +62,8 @@ router
   .addRoute('/automode', renderAutoMode)
   .addRoute('/stock', renderStockDetail)
   .addRoute('/profile', renderProfile)
-  .addRoute('/fearbreaker', renderFearBreaker);
+  .addRoute('/fearbreaker', renderFearBreaker)
+  .addRoute('/trade', renderTradeAnalysis);
 
 // Start router
 initApp();
