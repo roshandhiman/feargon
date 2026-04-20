@@ -1,3 +1,4 @@
+import { createSidebar, createMobileMenuBtn } from '../components/sidebar.js';
 import { icons, renderUserProfile } from '../utils/helpers.js';
 
 export function renderFearBreaker(container) {
@@ -27,7 +28,6 @@ export function renderFearBreaker(container) {
     <div class="dashboard-content">
       <div style="max-width: 900px; margin: 0 auto;">
         <div id="fb-intro" style="text-align: center; padding: 60px 20px;">
-           <div class="orb orb-purple" style="margin: 0 auto 24px; width: 120px; height: 120px; filter: blur(40px); opacity: 0.6;"></div>
            <h1 class="text-gradient" style="font-size: 48px; margin-bottom: 16px;">Break Your Investing Fear</h1>
            <p class="text-secondary" style="font-size: 18px; max-width: 600px; margin: 0 auto 40px;">
              Fear is the #1 reason investors lose money. Our AI-driven profiler identifies your psychological stressors and gives you a blueprint to combat them.
@@ -55,10 +55,10 @@ export function renderFearBreaker(container) {
           </div>
         </div>
 
-        <!-- Final Result -->
-        <div id="fb-result-container" style="display: none; padding-bottom: 60px;">
-          <div class="glass" style="padding: 0; overflow: hidden; border-radius: 24px;">
-            <div style="background: var(--gradient-primary); padding: 60px 40px; text-align: center; color: white;">
+      <!-- Final Result -->
+      <div id="fb-result-container" style="display: none; padding-bottom: 60px;">
+        <div class="glass" style="padding: 0; overflow: hidden; border-radius: 24px;">
+          <div style="background: linear-gradient(135deg, var(--accent-cyan) 0%, var(--accent-blue) 100%); padding: 60px 40px; text-align: center; color: white;">
                <div id="persona-icon" style="font-size: 64px; margin-bottom: 16px;">🐢</div>
                <h3 style="text-transform: uppercase; letter-spacing: 2px; font-size: 14px; opacity: 0.8; margin-bottom: 8px;">Your Fear Persona is</h3>
                <h2 id="persona-name" style="font-size: 42px; font-weight: 900; margin-bottom: 12px;">The Obsidian Turtle</h2>

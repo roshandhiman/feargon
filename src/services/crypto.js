@@ -20,7 +20,7 @@ export const getCryptoMarketData = async () => {
   try {
     // We pass per_page=500 and ids=all to get the broad market
     const res = await fetch(
-      `/api/proxy/crypto?type=market&ids=all&per_page=500`
+      `/api/proxy/crypto?type=market&ids=all&per_page=100`
     );
 
     if (!res.ok) {

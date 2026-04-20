@@ -578,13 +578,11 @@ h3 > svg, h4 > svg, p > svg, span > svg {
 /* --- Page transition --- */
 .page-enter {
   opacity: 0;
-  transform: translateY(12px);
 }
 
 .page-active {
   opacity: 1;
-  transform: translateY(0);
-  transition: opacity 400ms var(--ease-out), transform 400ms var(--ease-out);
+  transition: opacity 400ms var(--ease-out);
 }
 
 
