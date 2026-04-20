@@ -2,7 +2,9 @@
    Trade Vision - AI Graph Analysis
    ==================================== */
 
+import { createSidebar, createMobileMenuBtn } from '../components/sidebar.js';
 import { icons, renderUserProfile } from '../utils/helpers.js';
+import { analyzeGraphVision } from '../utils/gemini.js';
 
 export function renderTradeAnalysis(container) {
   container.innerHTML = '';

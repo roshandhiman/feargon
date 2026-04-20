@@ -4,7 +4,7 @@
 
 import { createSidebar, createMobileMenuBtn } from '../components/sidebar.js';
 import { drawDonutChart, drawLineChart, generateSmoothData } from '../components/chart.js';
-import { icons } from '../utils/helpers.js';
+import { icons, renderUserProfile } from '../utils/helpers.js';
 import { showToast } from '../components/toast.js';
 import { getCoinPrice } from '../services/crypto.js';
 import { getStockPrice } from '../services/yahoo.js';
