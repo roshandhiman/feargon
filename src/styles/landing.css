@@ -416,7 +416,7 @@
 }
 
 .landing-nav.scrolled {
-  background: rgba(255, 255, 255, 0.8);
+  background: var(--bg-glass);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border-bottom: 1px solid var(--border-subtle);
@@ -452,7 +452,7 @@
 
 .nav-link {
   font-size: var(--text-sm);
-  color: #000000;
+  color: var(--text-primary);
   font-weight: 500;
   transition: all var(--transition-fast);
   cursor: pointer;

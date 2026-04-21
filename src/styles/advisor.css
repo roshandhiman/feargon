@@ -18,7 +18,7 @@
 /* --- Internal Sidebar --- */
 .chat-history-sidebar {
   width: 280px;
-  background: rgba(255, 255, 255, 0.85); /* Matched to main sidebar */
+  background: var(--bg-glass-strong);
   backdrop-filter: blur(30px);
   -webkit-backdrop-filter: blur(30px);
   border-right: 1px solid var(--border-subtle);
@@ -35,8 +35,8 @@
 .new-chat-action-btn {
   width: 100%;
   padding: var(--space-4);
-  background: rgba(255, 255, 255, 0.1) !important;
-  border: 1px solid rgba(0, 212, 255, 0.2) !important;
+  background: var(--bg-card) !important;
+  border: 1px solid var(--border-accent) !important;
   border-radius: var(--radius-lg);
   color: var(--accent-cyan) !important;
   display: flex;
@@ -52,6 +52,8 @@
 
 .new-chat-action-btn:hover {
   transform: translateY(-2px);
+  background: rgba(0, 212, 255, 0.08) !important;
+  border-color: var(--accent-cyan) !important;
   box-shadow: 0 6px 20px rgba(0, 212, 255, 0.3);
 }
 
@@ -87,7 +89,7 @@
 }
 
 .chat-history-item:hover {
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--bg-card-hover);
 }
 
 .chat-history-item.active {
@@ -171,8 +173,9 @@
   display: flex;
   align-items: center;
   gap: var(--space-3);
-  background: rgba(255, 255, 255, 0.6); /* Slight background for header */
+  background: var(--bg-glass);
   backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 
 .chat-avatar {
@@ -344,8 +347,9 @@
 .chat-input-area {
   padding: var(--space-4) var(--space-6);
   border-top: 1px solid var(--border-subtle);
-  background: rgba(255, 255, 255, 0.8);
+  background: var(--bg-glass);
   backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
 }
 
 .chat-input-wrapper {
@@ -471,7 +475,7 @@
 
 /* --- Advisor overrides (prevent global black button styles) --- */
 .chat-suggestion {
-  background: rgba(0, 0, 0, 0.04) !important;
+  background: var(--bg-card) !important;
   color: var(--text-secondary) !important;
   border-color: var(--border-default) !important;
 }
@@ -498,7 +502,7 @@
 }
 
 .sidebar-toggle:hover {
-  background: rgba(0, 0, 0, 0.05) !important;
+  background: var(--bg-card-hover) !important;
   color: var(--text-primary) !important;
 }
 

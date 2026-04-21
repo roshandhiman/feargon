@@ -43,7 +43,7 @@ export function renderFearBreaker(container) {
                  <span>ASSESSMENT PROGRESS</span>
                  <span id="progress-text">Question 1/3</span>
                </div>
-               <div style="background: rgba(255,255,255,0.05); height: 6px; border-radius: 3px;">
+               <div style="background: var(--bg-overlay-subtle); height: 6px; border-radius: 3px;">
                  <div id="fb-progress" style="width: 33%; height: 100%; background: var(--gradient-primary); border-radius: 3px; transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);"></div>
                </div>
             </div>

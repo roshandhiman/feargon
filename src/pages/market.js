@@ -128,17 +128,17 @@ export function renderMarket(container) {
       <div class="asset-card glass" style="animation-delay:${i * 50}ms;">
         <div class="asset-card-header">
           <div class="asset-info">
-            <div class="asset-icon" style="background:rgba(255,255,255,0.05);">
-              <span class="loading-pulse" style="display:inline-block;width:24px;height:12px;border-radius:4px;background:rgba(255,255,255,0.1);"></span>
+            <div class="asset-icon" style="background:var(--bg-overlay-subtle);">
+              <span class="loading-pulse" style="display:inline-block;width:24px;height:12px;border-radius:4px;background:var(--bg-card-hover);"></span>
             </div>
             <div>
-              <div class="asset-name loading-pulse" style="width:80px;height:14px;background:rgba(255,255,255,0.08);border-radius:4px;"></div>
-              <div class="asset-symbol loading-pulse" style="width:40px;height:10px;background:rgba(255,255,255,0.05);border-radius:4px;margin-top:4px;"></div>
+              <div class="asset-name loading-pulse" style="width:80px;height:14px;background:var(--bg-card-hover);border-radius:4px;"></div>
+              <div class="asset-symbol loading-pulse" style="width:40px;height:10px;background:var(--bg-overlay-subtle);border-radius:4px;margin-top:4px;"></div>
             </div>
           </div>
           <div class="asset-price">
-            <div class="asset-price-value loading-pulse" style="width:60px;height:14px;background:rgba(255,255,255,0.08);border-radius:4px;"></div>
-            <div class="asset-price-change loading-pulse" style="width:40px;height:10px;background:rgba(255,255,255,0.05);border-radius:4px;margin-top:4px;"></div>
+            <div class="asset-price-value loading-pulse" style="width:60px;height:14px;background:var(--bg-card-hover);border-radius:4px;"></div>
+            <div class="asset-price-change loading-pulse" style="width:40px;height:10px;background:var(--bg-overlay-subtle);border-radius:4px;margin-top:4px;"></div>
           </div>
         </div>
         <canvas class="asset-sparkline" style="opacity:0.3;"></canvas>

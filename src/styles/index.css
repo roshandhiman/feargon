@@ -10,8 +10,10 @@
   --bg-tertiary: #f1f5f9;
   --bg-card: rgba(0, 0, 0, 0.02);
   --bg-card-hover: rgba(0, 0, 0, 0.04);
-  --bg-glass: rgba(255, 255, 255, 0.8);
-  --bg-glass-strong: rgba(255, 255, 255, 0.95);
+  --bg-glass: rgba(255, 255, 255, 0.72);
+  --bg-glass-strong: rgba(255, 255, 255, 0.9);
+  --bg-overlay-subtle: rgba(0, 0, 0, 0.03);
+  --bg-gradient-opacity: 1;
 
   --text-primary: #000000;
   --text-secondary: #000000;
@@ -117,8 +119,10 @@ html[data-theme="dark"] {
   --bg-tertiary: #334155;
   --bg-card: rgba(255, 255, 255, 0.05);
   --bg-card-hover: rgba(255, 255, 255, 0.08);
-  --bg-glass: rgba(15, 23, 42, 0.8);
-  --bg-glass-strong: rgba(15, 23, 42, 0.95);
+  --bg-glass: rgba(15, 23, 42, 0.78);
+  --bg-glass-strong: rgba(15, 23, 42, 0.92);
+  --bg-overlay-subtle: rgba(255, 255, 255, 0.05);
+  --bg-gradient-opacity: 0.65;
   
   --text-primary: #f8fafc;
   --text-secondary: #cbd5e1;
@@ -162,6 +166,7 @@ body::before {
   position: fixed;
   inset: 0;
   background: var(--gradient-bg);
+  opacity: var(--bg-gradient-opacity);
   pointer-events: none;
   z-index: 0;
 }
@@ -173,7 +178,7 @@ body::before {
 }
 
 a {
-  color: #000000;
+  color: var(--text-primary);
   text-decoration: none;
 }
 a:hover {
@@ -361,7 +366,7 @@ h3 > svg, h4 > svg, p > svg, span > svg {
 
 .btn-secondary:hover {
   border-color: var(--border-hover);
-  background: rgba(0, 0, 0, 0.05);
+  background: var(--bg-card-hover);
   transform: translateY(-1px);
 }
 
@@ -666,7 +671,7 @@ h3 > svg, h4 > svg, p > svg, span > svg {
 }
 
 .search-dropdown-item:hover {
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--bg-card-hover);
 }
 
 .trade-vision-grid {

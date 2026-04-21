@@ -92,25 +92,25 @@ export function renderAutoMode(container) {
             <div class="perf-stat">
               <div class="perf-stat-label">Today</div>
               <div class="perf-stat-value" id="perf-today">
-                <span class="loading-pulse" style="display:inline-block;width:50px;height:16px;background:rgba(255,255,255,0.08);border-radius:4px;"></span>
+                <span class="loading-pulse" style="display:inline-block;width:50px;height:16px;background:var(--bg-card-hover);border-radius:4px;"></span>
               </div>
             </div>
             <div class="perf-stat">
               <div class="perf-stat-label">This Week</div>
               <div class="perf-stat-value" id="perf-week">
-                <span class="loading-pulse" style="display:inline-block;width:50px;height:16px;background:rgba(255,255,255,0.08);border-radius:4px;"></span>
+                <span class="loading-pulse" style="display:inline-block;width:50px;height:16px;background:var(--bg-card-hover);border-radius:4px;"></span>
               </div>
             </div>
             <div class="perf-stat">
               <div class="perf-stat-label">This Month</div>
               <div class="perf-stat-value" id="perf-month">
-                <span class="loading-pulse" style="display:inline-block;width:50px;height:16px;background:rgba(255,255,255,0.08);border-radius:4px;"></span>
+                <span class="loading-pulse" style="display:inline-block;width:50px;height:16px;background:var(--bg-card-hover);border-radius:4px;"></span>
               </div>
             </div>
             <div class="perf-stat">
               <div class="perf-stat-label">All Time</div>
               <div class="perf-stat-value" id="perf-alltime">
-                <span class="loading-pulse" style="display:inline-block;width:50px;height:16px;background:rgba(255,255,255,0.08);border-radius:4px;"></span>
+                <span class="loading-pulse" style="display:inline-block;width:50px;height:16px;background:var(--bg-card-hover);border-radius:4px;"></span>
               </div>
             </div>
           </div>
@@ -266,4 +266,3 @@ export function renderAutoMode(container) {
   // Refresh every 30 seconds
   registerInterval(PAGE_NAME, fetchPerformanceData, 30_000);
 }
-

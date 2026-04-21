@@ -74,7 +74,7 @@ export async function renderStockDetail(container) {
             </h3>
 
             <div id="ai-verdict-status" style="text-align: center; margin-bottom: 24px;">
-               <div class="loading-pulse" style="height: 100px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.03); border-radius: 12px; color: var(--text-tertiary);">
+               <div class="loading-pulse" style="height: 100px; display: flex; align-items: center; justify-content: center; background: var(--bg-overlay-subtle); border-radius: 12px; color: var(--text-tertiary);">
                  Analyzing Trends...
                </div>
             </div>
@@ -89,7 +89,7 @@ export async function renderStockDetail(container) {
                  <span id="verdict-confidence" style="font-weight: 700;">85%</span>
                </div>
 
-               <div style="background: rgba(255,255,255,0.03); padding: 16px; border-radius: 12px; margin-bottom: 24px;">
+               <div style="background: var(--bg-overlay-subtle); padding: 16px; border-radius: 12px; margin-bottom: 24px;">
                  <h4 style="font-size: 12px; color: var(--accent-purple); margin-bottom: 8px;">REASONING</h4>
                  <p id="verdict-reasoning" style="font-size: 14px; color: var(--text-secondary); line-height: 1.5;"></p>
                </div>

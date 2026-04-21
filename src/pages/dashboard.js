@@ -150,15 +150,15 @@ export function renderDashboard(container) {
           <div class="risk-card glass hover-glow" id="pulse-card">
             <h3>Market Pulse</h3>
             <div style="display:flex;flex-direction:column;gap:var(--space-3);margin-top:var(--space-2);">
-              <div style="display:flex;justify-content:space-between;align-items:center;padding:var(--space-3);background:rgba(255,255,255,0.02);border-radius:var(--radius-md);">
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:var(--space-3);background:var(--bg-overlay-subtle);border-radius:var(--radius-md);">
                 <span style="font-size:var(--text-sm);font-weight:600;">AAPL</span>
                 <span style="font-size:var(--text-sm);font-weight:600;" id="pulse-aapl" class="pulse-value loading-pulse">Loading...</span>
               </div>
-              <div style="display:flex;justify-content:space-between;align-items:center;padding:var(--space-3);background:rgba(255,255,255,0.02);border-radius:var(--radius-md);">
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:var(--space-3);background:var(--bg-overlay-subtle);border-radius:var(--radius-md);">
                 <span style="font-size:var(--text-sm);font-weight:600;">TSLA</span>
                 <span style="font-size:var(--text-sm);font-weight:600;" id="pulse-tsla" class="pulse-value loading-pulse">Loading...</span>
               </div>
-              <div style="display:flex;justify-content:space-between;align-items:center;padding:var(--space-3);background:rgba(255,255,255,0.02);border-radius:var(--radius-md);">
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:var(--space-3);background:var(--bg-overlay-subtle);border-radius:var(--radius-md);">
                 <span style="font-size:var(--text-sm);font-weight:600;">BTC</span>
                 <span style="font-size:var(--text-sm);font-weight:600;" id="pulse-btc" class="pulse-value loading-pulse">Loading...</span>
               </div>
@@ -344,7 +344,7 @@ export function renderDashboard(container) {
         const changeClass = stock.change >= 0 ? 'positive' : 'negative';
         const sign = stock.change >= 0 ? '+' : '';
         return `
-          <div style="display:flex;justify-content:space-between;align-items:center;padding:var(--space-3);background:rgba(255,255,255,0.02);border-radius:var(--radius-md);">
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:var(--space-3);background:var(--bg-overlay-subtle);border-radius:var(--radius-md);">
             <div style="display:flex;align-items:center;gap:var(--space-3);">
               <span style="font-size:var(--text-sm);font-weight:700;">${stock.symbol}</span>
             </div>
@@ -383,7 +383,7 @@ export function renderDashboard(container) {
         const changeClass = coin.change24h >= 0 ? 'positive' : 'negative';
         const sign = coin.change24h >= 0 ? '+' : '';
         return `
-          <div style="display:flex;justify-content:space-between;align-items:center;padding:var(--space-3);background:rgba(255,255,255,0.02);border-radius:var(--radius-md);">
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:var(--space-3);background:var(--bg-overlay-subtle);border-radius:var(--radius-md);">
             <div style="display:flex;align-items:center;gap:var(--space-3);">
               <span style="font-size:var(--text-sm);font-weight:700;">${coin.symbol}</span>
               <span style="font-size:var(--text-xs);color:var(--text-tertiary);">${coin.name}</span>

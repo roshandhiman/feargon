@@ -72,7 +72,7 @@ export function renderProfile(container) {
             .profile-input {
               width: 100%;
               padding: 14px 16px;
-              background: #f7f9fc;
+              background: var(--bg-glass);
               border: 1px solid var(--border-subtle);
               border-radius: var(--radius-md);
               font-size: var(--text-base);
@@ -80,7 +80,7 @@ export function renderProfile(container) {
               transition: all var(--transition-fast);
             }
             .profile-input:focus {
-              background: #ffffff;
+              background: var(--bg-glass-strong);
               border-color: var(--accent-cyan);
               box-shadow: 0 0 0 4px rgba(0, 212, 255, 0.1);
               outline: none;

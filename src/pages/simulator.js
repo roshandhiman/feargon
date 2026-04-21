@@ -295,7 +295,7 @@ export function renderSimulator(container) {
       
       aiTextEl.innerHTML = `
         <p class="mb-4">${aiResult.analysisBrief}</p>
-        <div style="background: rgba(255,255,255,0.03); padding: 12px; border-radius: 8px;">
+        <div style="background: var(--bg-overlay-subtle); padding: 12px; border-radius: 8px;">
           <h4 style="font-size: 13px; margin-bottom: 8px; color: var(--accent-purple);">Recommendations:</h4>
           <ul style="list-style: disc; margin-left: 20px; font-size: 13px; color: var(--text-secondary);">
             ${aiResult.recommendations.map(r => `<li class="mb-1">${r}</li>`).join('')}

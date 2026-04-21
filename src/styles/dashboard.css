@@ -14,7 +14,7 @@
   left: 0;
   bottom: 0;
   width: var(--sidebar-width);
-  background: rgba(255, 255, 255, 0.85);
+  background: var(--bg-glass-strong);
   backdrop-filter: blur(30px);
   -webkit-backdrop-filter: blur(30px);
   border-right: 1px solid var(--border-subtle);
@@ -198,7 +198,9 @@
   justify-content: space-between;
   padding: 0 var(--space-8);
   border-bottom: 1px solid var(--border-subtle);
-  background: transparent;
+  background: var(--bg-glass);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
   position: sticky;
   top: 0;
   z-index: var(--z-navbar);
@@ -261,7 +263,7 @@
 }
 
 .user-profile:hover {
-  background: var(--bg-card);
+  background: var(--bg-card-hover);
 }
 
 .user-avatar {
