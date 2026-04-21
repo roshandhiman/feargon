@@ -48,12 +48,12 @@ export async function getBotResponse(userMessage) {
 /**
  * Run a multi-asset simulation analysis via AI
  */
-export async function runAISimulation(assets, amount, period) {
+export async function runAISimulation(assets, amount, period, portfolioMetrics = null) {
     try {
         const response = await fetch('/api/simulate', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ assets, amount, period })
+            body: JSON.stringify({ assets, amount, period, portfolioMetrics })
         });
         const data = await response.json();
         return data;

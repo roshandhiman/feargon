@@ -46,6 +46,58 @@ const model = genAI.getGenerativeModel({
 
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
+function clamp(value, min, max) {
+    return Math.min(max, Math.max(min, value));
+}
+
+function getSymbolSeed(symbol = 'ASSET') {
+    return String(symbol)
+        .toUpperCase()
+        .split('')
+        .reduce((sum, char, index) => sum + char.charCodeAt(0) * (index + 1), 0);
+}
+
+function createFallbackYahooChart(symbol = 'AAPL', days = 31) {
+    const seed = getSymbolSeed(symbol);
+    const basePrice = 60 + (seed % 420);
+    const trend = ((seed % 17) - 6) / 1000;
+    const closes = [];
+    const timestamps = [];
+    const now = new Date();
+
+    for (let i = days - 1; i >= 0; i--) {
+        const date = new Date(now);
+        date.setDate(now.getDate() - i);
+        const step = days - 1 - i;
+        const wave = Math.sin((step + seed) * 0.55) * 0.018;
+        const drift = 1 + trend * step;
+        const price = basePrice * drift * (1 + wave);
+        closes.push(Number(Math.max(1, price).toFixed(2)));
+        timestamps.push(Math.floor(date.getTime() / 1000));
+    }
+
+    const currentPrice = closes[closes.length - 1];
+    const previousPrice = closes[closes.length - 2] || currentPrice;
+    const changePercent = previousPrice ? ((currentPrice - previousPrice) / previousPrice) * 100 : 0;
+
+    return {
+        chart: {
+            result: [{
+                meta: {
+                    symbol,
+                    regularMarketPrice: currentPrice,
+                    regularMarketChangePercent: Number(changePercent.toFixed(2)),
+                    chartPreviousClose: previousPrice
+                },
+                timestamp: timestamps,
+                indicators: {
+                    quote: [{ close: closes }]
+                }
+            }]
+        }
+    };
+}
+
 function formatPriceLevel(value) {
     if (value === null || value === undefined || value === '') return 'N/A';
     const numericText = String(value).replace(/[^0-9.-]/g, '');
@@ -57,24 +109,16 @@ function formatPriceLevel(value) {
 
 // --- HACKATHON PROXIES ---
 app.get('/api/proxy/yahoo', async (req, res) => {
-    const { symbol } = req.query;
+    const { symbol, range = '1mo', interval = '1d' } = req.query;
     try {
-        const response = await fetch(`https://query1.finance.yahoo.com/v8/finance/chart/${symbol}`);
+        const query = new URLSearchParams({ range, interval });
+        const response = await fetch(`https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?${query.toString()}`);
         if (!response.ok) throw new Error("Yahoo API failed");
         const data = await response.json();
         res.json(data);
     } catch (error) {
         console.error("AI Error:", error.message);
-        res.json({
-            chart: {
-                result: [{
-                    meta: {
-                        regularMarketPrice: Math.random() * 200 + 100,
-                        regularMarketChangePercent: (Math.random() * 5) - 2.5
-                    }
-                }]
-            }
-        });
+        res.json(createFallbackYahooChart(symbol, range === '5d' ? 5 : 31));
     }
 });
 
@@ -113,36 +157,67 @@ app.get('/api/proxy/crypto', async (req, res) => {
 
 // --- NEW: AI SIMULATION ENDPOINT ---
 app.post('/api/simulate', async (req, res) => {
-    const { assets, amount, period } = req.body;
+    const { assets = [], amount, period, portfolioMetrics = {} } = req.body;
+    const metricSummary = {
+        riskLevel: portfolioMetrics.riskLevel,
+        expectedAnnualReturn: portfolioMetrics.expectedAnnualReturn,
+        annualVolatility: portfolioMetrics.annualVolatility,
+        historicalReturn30d: portfolioMetrics.historicalReturn30d,
+        cryptoShare: portfolioMetrics.cryptoShare,
+        assetCount: portfolioMetrics.assetCount
+    };
 
     const prompt = `Perform a realistic financial simulation analysis for the following portfolio:
     Assets: ${assets.join(', ')}
     Investment: $${amount}
     Horizon: ${period} years
+    Portfolio metrics from live/recent market data: ${JSON.stringify(metricSummary)}
 
-    Provide the analysis in JSON format with exactly these keys:
-    - riskScore: (0-100)
-    - lossProbability: (percentage)
-    - expectedReturn: (percentage)
-    - analysisBrief: (2-3 sentences)
-    - recommendations: (Array of 3 strings)
+    Return only valid JSON with exactly these keys:
+    - riskScore: number from 0-100
+    - winProbability: number from 0-100
+    - lossProbability: number from 0-100
+    - expectedReturn: annual expected return percentage as a number
+    - analysisBrief: 2 concise sentences using the live/recent data context
+    - recommendations: array of exactly 3 concise strings
 
-    Think like a professional quant advisor. Consider current 2024-2025 market trends.`;
+    Use the supplied metrics as the anchor. Do not use percent signs in numeric fields.`;
 
     try {
         const result = await model.generateContent(prompt);
         let text = result.response.text();
-        // Extract JSON if AI wrapped it in markdown
         text = text.replace(/```json|```/g, '').trim();
-        res.json(JSON.parse(text));
+        const jsonMatch = text.match(/\{[\s\S]*\}/);
+        const parsed = JSON.parse(jsonMatch ? jsonMatch[0] : text);
+        const fallbackRisk = Math.round(clamp((portfolioMetrics.annualVolatility || 0.3) * 100, 10, 95));
+        const riskScore = Math.round(clamp(Number(parsed.riskScore ?? fallbackRisk), 0, 100));
+        const expectedReturn = Number(parsed.expectedReturn ?? ((portfolioMetrics.expectedAnnualReturn || 0.08) * 100));
+        const winProbability = Math.round(clamp(Number(parsed.winProbability ?? (100 - (parsed.lossProbability ?? riskScore * 0.55))), 0, 100));
+        const lossProbability = Math.round(clamp(Number(parsed.lossProbability ?? (100 - winProbability)), 0, 100));
+
+        res.json({
+            riskScore,
+            winProbability,
+            lossProbability,
+            expectedReturn: Number(clamp(expectedReturn, -80, 150).toFixed(1)),
+            analysisBrief: parsed.analysisBrief || "The selected assets were evaluated using recent trend and volatility data. The projection balances expected return against downside risk for the selected horizon.",
+            recommendations: Array.isArray(parsed.recommendations) && parsed.recommendations.length
+                ? parsed.recommendations.slice(0, 3)
+                : ["Review concentration risk", "Rebalance if volatility rises", "Use staged entries for large allocations"]
+        });
     } catch (error) {
         console.error("AI Error:", error.message);
-        res.status(500).json({ 
-            riskScore: 45, 
-            lossProbability: 12, 
-            expectedReturn: 8, 
-            analysisBrief: "AI analysis is temporarily unavailable. Check the backend terminal for the exact Gemini error, then use this conservative fallback based on historical averages.",
-            recommendations: ["Maintain diversification", "Monitor volatility", "Rebalance quarterly"]
+        const riskScore = Math.round(clamp((portfolioMetrics.annualVolatility || 0.35) * 100, 15, 95));
+        const expectedReturn = Number(clamp((portfolioMetrics.expectedAnnualReturn || 0.08) * 100, -80, 150).toFixed(1));
+        const winProbability = Math.round(clamp(72 + expectedReturn * 0.35 - riskScore * 0.35, 25, 92));
+
+        res.json({ 
+            riskScore,
+            winProbability,
+            lossProbability: 100 - winProbability,
+            expectedReturn,
+            analysisBrief: "AI analysis is temporarily unavailable, so this result uses the selected assets' recent trend and volatility. Check the backend terminal for the exact Gemini error.",
+            recommendations: ["Diversify across asset types", "Size positions according to volatility", "Review the projection after fresh market data"]
         });
     }
 });

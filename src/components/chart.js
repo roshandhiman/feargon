@@ -256,33 +256,88 @@ export function drawSimulatorChart(canvas, options = {}) {
   const padding = { top: 20, right: 20, bottom: 30, left: 50 };
   const chartW = w - padding.left - padding.right;
   const chartH = h - padding.top - padding.bottom;
+  const styles = getComputedStyle(document.documentElement);
+  const gridColor = styles.getPropertyValue('--border-subtle').trim() || 'rgba(0,0,0,0.08)';
+  const textColor = styles.getPropertyValue('--text-tertiary').trim() || 'rgba(0,0,0,0.55)';
+  const primaryTextColor = styles.getPropertyValue('--text-secondary').trim() || 'rgba(0,0,0,0.7)';
 
-  const scenarios = {
-    safe: { data: generateGrowthData(40, 1.05, 0.02), color: '#10b981', label: 'Safe' },
-    moderate: { data: generateGrowthData(40, 1.12, 0.06), color: '#f59e0b', label: 'Moderate' },
-    aggressive: { data: generateGrowthData(40, 1.22, 0.12), color: '#ef4444', label: 'Aggressive' },
+  const {
+    amount = 10000,
+    period = 3,
+    scenarios: suppliedScenarios = null,
+    activeRisk = 'moderate',
+  } = options;
+
+  const pointCount = Math.max(13, Math.min(121, period * 12 + 1));
+  const defaultScenarios = {
+    safe: {
+      data: buildProjectionSeries(amount, period, 0.06, 0.12, pointCount, 1),
+      color: '#10b981',
+      label: 'Safe'
+    },
+    moderate: {
+      data: buildProjectionSeries(amount, period, 0.1, 0.22, pointCount, 2),
+      color: '#f59e0b',
+      label: 'Moderate'
+    },
+    aggressive: {
+      data: buildProjectionSeries(amount, period, 0.16, 0.36, pointCount, 3),
+      color: '#ef4444',
+      label: 'Aggressive'
+    },
   };
 
-  const allData = [...scenarios.safe.data, ...scenarios.moderate.data, ...scenarios.aggressive.data];
+  const scenarios = suppliedScenarios || defaultScenarios;
+  let scenarioList = ['safe', 'moderate', 'aggressive']
+    .map(key => ({ key, ...scenarios[key] }))
+    .filter(scenario => Array.isArray(scenario.data) && scenario.data.length > 1);
+
+  if (scenarioList.length === 0) {
+    scenarioList = ['safe', 'moderate', 'aggressive']
+      .map(key => ({ key, ...defaultScenarios[key] }));
+  }
+
+  const allData = scenarioList.flatMap(scenario => scenario.data);
   const min = Math.min(...allData) * 0.95;
   const max = Math.max(...allData) * 1.05;
   const range = max - min;
 
   let progress = 0;
 
+  function formatCompactCurrency(value) {
+    if (value >= 1000000) return `$${(value / 1000000).toFixed(1)}M`;
+    if (value >= 1000) return `$${(value / 1000).toFixed(0)}K`;
+    return `$${value.toFixed(0)}`;
+  }
+
   function drawGrid() {
-    ctx.strokeStyle = 'rgba(0,0,0,0.04)';
+    ctx.strokeStyle = gridColor;
     ctx.lineWidth = 1;
+    ctx.font = '11px Inter, sans-serif';
+    ctx.fillStyle = textColor;
+    ctx.textAlign = 'right';
+
     for (let i = 0; i <= 4; i++) {
       const y = padding.top + (chartH / 4) * i;
+      const value = max - (range / 4) * i;
       ctx.beginPath();
       ctx.moveTo(padding.left, y);
       ctx.lineTo(w - padding.right, y);
       ctx.stroke();
+      ctx.fillText(formatCompactCurrency(value), padding.left - 8, y + 4);
+    }
+
+    ctx.textAlign = 'center';
+    const labelCount = Math.min(5, period);
+    for (let i = 0; i <= labelCount; i++) {
+      const year = Math.round((i / Math.max(1, labelCount)) * period);
+      const x = padding.left + (year / Math.max(1, period)) * chartW;
+      ctx.fillText(`${year}Y`, x, h - 8);
     }
   }
 
-  function drawScenarioLine(data, color) {
+  function drawScenarioLine(scenario) {
+    const { data, color, key } = scenario;
     const drawCount = Math.floor(data.length * progress);
     if (drawCount < 2) return;
 
@@ -295,21 +350,49 @@ export function drawSimulatorChart(canvas, options = {}) {
     });
 
     ctx.strokeStyle = color;
-    ctx.lineWidth = 2;
+    ctx.lineWidth = key === activeRisk ? 3 : 2;
     ctx.lineCap = 'round';
     ctx.stroke();
 
     // Glow
     ctx.strokeStyle = color + '40';
-    ctx.lineWidth = 6;
+    ctx.lineWidth = key === activeRisk ? 8 : 5;
     ctx.stroke();
+
+    if (progress >= 0.99) {
+      const lastValue = data[data.length - 1];
+      const lastX = padding.left + chartW;
+      const lastY = padding.top + chartH - ((lastValue - min) / range) * chartH;
+      ctx.beginPath();
+      ctx.arc(lastX, lastY, key === activeRisk ? 4 : 3, 0, Math.PI * 2);
+      ctx.fillStyle = color;
+      ctx.fill();
+    }
+  }
+
+  function drawLegend() {
+    ctx.font = '12px Inter, sans-serif';
+    ctx.textAlign = 'left';
+    let x = padding.left;
+    const y = padding.top - 6;
+
+    scenarioList.forEach(scenario => {
+      ctx.fillStyle = scenario.color;
+      ctx.beginPath();
+      ctx.arc(x, y, 4, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = scenario.key === activeRisk ? primaryTextColor : textColor;
+      ctx.fillText(scenario.label, x + 8, y + 4);
+      x += ctx.measureText(scenario.label).width + 42;
+    });
   }
 
   function frame() {
     ctx.clearRect(0, 0, w, h);
     drawGrid();
+    drawLegend();
 
-    Object.values(scenarios).forEach(s => drawScenarioLine(s.data, s.color));
+    scenarioList.forEach(drawScenarioLine);
 
     if (progress < 1) {
       progress += 0.02;
@@ -318,6 +401,18 @@ export function drawSimulatorChart(canvas, options = {}) {
   }
 
   frame();
+}
+
+function buildProjectionSeries(amount, years, annualReturn, annualVolatility, count, phase = 1) {
+  const data = [];
+  for (let i = 0; i < count; i++) {
+    const t = i / Math.max(1, count - 1);
+    const trend = amount * Math.pow(1 + annualReturn, t * years);
+    const volatilityWave = Math.sin(t * Math.PI * years * 2 + phase) * annualVolatility * 0.055;
+    const drawdownWave = Math.cos(t * Math.PI * years * 3 + phase * 0.7) * annualVolatility * 0.025;
+    data.push(Math.max(amount * 0.2, trend * (1 + volatilityWave + drawdownWave)));
+  }
+  return data;
 }
 
 /**
