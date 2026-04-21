@@ -114,6 +114,29 @@ export function renderProfile(container) {
         <div class="divider"></div>
 
         <div style="margin-bottom: var(--space-6);">
+          <h3 style="margin-bottom: var(--space-5);">Referral & Credits</h3>
+          
+          <div class="glass-strong" style="padding: var(--space-4); border-radius: var(--radius-lg); margin-bottom: var(--space-4); display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <p style="font-size: var(--text-xs); color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 1px;">Current Balance</p>
+              <p id="profile-credits-display" style="font-size: var(--text-2xl); font-weight: 800; color: var(--accent-cyan);">Loading...</p>
+            </div>
+            <a href="#/credits" class="btn btn-secondary btn-sm">Spend Hub</a>
+          </div>
+
+          <div class="profile-field-group">
+            <label class="profile-field-label">Your Referral Code</label>
+            <div style="display: flex; gap: 8px;">
+              <input type="text" id="profile-referral-code" class="profile-input" value="Loading..." readonly style="flex: 1; cursor: default;" />
+              <button id="copy-code-btn" class="btn btn-secondary" style="padding: 0 16px;">Copy</button>
+            </div>
+            <p style="font-size: 12px; color: var(--text-tertiary); margin-top: 8px;">Share this code with friends! You get 50 credits and they get 100.</p>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div style="margin-bottom: var(--space-6);">
           <h3 style="margin-bottom: var(--space-5);">Preferences</h3>
           
           <div class="profile-field-group">
@@ -212,6 +235,41 @@ export function renderProfile(container) {
 
   // Currency Selection Logic
   // (Handled entirely by the unified 'Save Profile' button above now)
+
+  // --- Referral & Credit Logic ---
+  const creditsEl = main.querySelector('#profile-credits-display');
+  const codeEl = main.querySelector('#profile-referral-code');
+  const copyBtn = main.querySelector('#copy-code-btn');
+
+  const loadReferralData = async () => {
+    if (!user) return;
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('credits, referral_code')
+        .eq('id', user.id)
+        .single();
+
+      if (error) throw error;
+      
+      if (creditsEl) creditsEl.textContent = `${data.credits || 0} PTS`;
+      if (codeEl) codeEl.value = data.referral_code || 'No code set';
+      
+      if (copyBtn && data.referral_code) {
+        copyBtn.addEventListener('click', () => {
+          navigator.clipboard.writeText(data.referral_code);
+          showToast('Referral code copied!', { type: 'success' });
+          copyBtn.textContent = 'Copied!';
+          setTimeout(() => { copyBtn.textContent = 'Copy'; }, 2000);
+        });
+      }
+    } catch (err) {
+      console.error("Error loading referral data:", err);
+      if (creditsEl) creditsEl.textContent = '0 PTS';
+    }
+  };
+
+  loadReferralData();
 
   // Logout Logic
   const logoutBtn = main.querySelector('#logout-btn');

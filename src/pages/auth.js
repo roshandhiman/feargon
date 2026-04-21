@@ -59,13 +59,9 @@ export function renderAuth(container) {
             <label for="signup-password" class="form-label">Password</label>
           </div>
 
-          <div class="risk-selector">
-            <span class="risk-selector-label">Risk Appetite</span>
-            <div class="risk-options" id="risk-options">
-              <button type="button" class="risk-option" data-risk="low">Low</button>
-              <button type="button" class="risk-option active" data-risk="medium">Medium</button>
-              <button type="button" class="risk-option" data-risk="high">High</button>
-            </div>
+          <div class="form-group">
+            <input type="text" id="signup-referral" class="form-input" placeholder=" " autocomplete="off" />
+            <label for="signup-referral" class="form-label">Referral Code (Optional)</label>
           </div>
 
           <button type="submit" class="btn btn-primary btn-lg" style="width:100%;" id="signup-submit">Create Account</button>
@@ -156,29 +152,75 @@ export function renderAuth(container) {
     const name = document.getElementById('signup-name').value;
     const email = document.getElementById('signup-email').value;
     const password = document.getElementById('signup-password').value;
+    const providedReferral = document.getElementById('signup-referral').value.trim().toUpperCase();
     
     btn.disabled = true;
     btn.textContent = 'Creating...';
     
-    const { error } = await supabase.auth.signUp({ 
+    // 1. Auth Signup
+    const { data: authData, error: authError } = await supabase.auth.signUp({ 
       email, 
       password,
-      options: {
-        data: { name }
+      options: { data: { name } }
+    });
+    
+    if (authError) {
+      btn.disabled = false;
+      btn.textContent = 'Create Account';
+      showToast(authError.message, { type: 'error' });
+      return;
+    }
+
+    const userId = authData.user.id;
+    let initialCredits = 0;
+    let referredBy = null;
+
+    // 2. Build Referral Data
+    const myReferralCode = `${name.split(' ')[0].toUpperCase()}-${Math.floor(1000 + Math.random() * 9000)}`;
+
+    // 3. Handle Referral Code (if provided)
+    if (providedReferral) {
+      const { data: referrer, error: refError } = await supabase
+        .from('profiles')
+        .select('id, credits')
+        .eq('referral_code', providedReferral)
+        .single();
+
+      if (referrer) {
+        referredBy = referrer.id;
+        initialCredits = 100; // Award 100 to new user
+        
+        // Award 50 to referrer
+        await supabase
+          .from('profiles')
+          .update({ credits: (referrer.credits || 0) + 50 })
+          .eq('id', referrer.id);
+          
+        console.log(`Referral valid! Referrer: ${referrer.id}`);
+      } else {
+        console.warn("Invalid referral code provided.");
       }
+    }
+
+    // 4. Create Profile
+    await supabase.from('profiles').upsert({
+      id: userId,
+      name,
+      email,
+      referral_code: myReferralCode,
+      credits: initialCredits,
+      referred_by: referredBy,
+      updated_at: new Date()
     });
 
-    btn.disabled = false;
-    btn.textContent = 'Create Account';
+    // Save locally
+    localStorage.setItem('fearless_profile_name', name);
+    localStorage.setItem('fearless_credits', initialCredits);
 
-    if (error) {
-      showToast(error.message, { type: 'error' });
-    } else {
-      showToast('Account created successfully!', { type: 'success' });
-      setTimeout(() => {
-        window.location.hash = '/dashboard';
-      }, 500);
-    }
+    showToast('Welcome to Feargon!', { type: 'success' });
+    setTimeout(() => {
+      window.location.hash = '/dashboard';
+    }, 500);
   });
 
   // === Social Login ===

@@ -14,6 +14,7 @@ const navItems = [
   { id: 'trade', label: 'Trade Vision', icon: 'chart', path: '/trade' },
   { id: 'advisor', label: 'AI Advisor', icon: 'advisor', path: '/advisor' },
   { id: 'automode', label: 'Full Access', icon: 'autoInvest', path: '/automode' },
+  { id: 'credits', label: 'Credits Hub', icon: 'target', path: '/credits' },
 ];
 
 const bottomItems = [
