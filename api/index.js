@@ -12,8 +12,9 @@ if (!process.env.GEMINI_API_KEY) {
             const match = line.match(/^([^=]+)=(.*)$/);
             if (match) process.env[match[1].trim()] = match[2].trim();
         });
-    } catch (e) {
-        // file unreadable or not found; safely ignore
+    } catch (error) {
+        console.error("AI Error:", error.message);
+        // file unreadable or not found; safely continue
     }
 }
 
@@ -40,10 +41,19 @@ RULES:
 7. TONE: Maintain a professional and helpful tone like an investment advisor.`;
 
 const model = genAI.getGenerativeModel({
-    model: "gemini-2.0-flash",
+    model: process.env.GEMINI_MODEL || "gemini-2.5-flash-lite",
 });
 
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+function formatPriceLevel(value) {
+    if (value === null || value === undefined || value === '') return 'N/A';
+    const numericText = String(value).replace(/[^0-9.-]/g, '');
+    if (!numericText) return String(value);
+    const numericValue = Number(numericText);
+    if (Number.isFinite(numericValue)) return `$${numericValue.toFixed(2)}`;
+    return String(value);
+}
 
 // --- HACKATHON PROXIES ---
 app.get('/api/proxy/yahoo', async (req, res) => {
@@ -53,7 +63,8 @@ app.get('/api/proxy/yahoo', async (req, res) => {
         if (!response.ok) throw new Error("Yahoo API failed");
         const data = await response.json();
         res.json(data);
-    } catch (e) {
+    } catch (error) {
+        console.error("AI Error:", error.message);
         res.json({
             chart: {
                 result: [{
@@ -84,7 +95,8 @@ app.get('/api/proxy/crypto', async (req, res) => {
         if (!response.ok) throw new Error("CoinGecko API limit");
         const data = await response.json();
         res.json(data);
-    } catch (e) {
+    } catch (error) {
+        console.error("AI Error:", error.message);
         if (type === 'simple') {
             res.json({ 
                 bitcoin: { usd: 67110, usd_24h_change: 2.1 }, 
@@ -124,11 +136,12 @@ app.post('/api/simulate', async (req, res) => {
         text = text.replace(/```json|```/g, '').trim();
         res.json(JSON.parse(text));
     } catch (error) {
+        console.error("AI Error:", error.message);
         res.status(500).json({ 
             riskScore: 45, 
             lossProbability: 12, 
             expectedReturn: 8, 
-            analysisBrief: "Unable to reach deep AI analysis. Here is a conservative fallback based on historical averages.",
+            analysisBrief: "AI analysis is temporarily unavailable. Check the backend terminal for the exact Gemini error, then use this conservative fallback based on historical averages.",
             recommendations: ["Maintain diversification", "Monitor volatility", "Rebalance quarterly"]
         });
     }
@@ -142,25 +155,47 @@ app.post('/api/analysis/verdict', async (req, res) => {
     Current Price: ${price}
     Recent History (simplified): ${JSON.stringify(history)}
 
-    Return a JSON response with:
+    Return only valid JSON with exactly these keys:
     - verdict: "BUY" | "HOLD" | "SELL"
     - confidence: (0-100)
     - reasoning: (2 sentences max)
-    - keyLevels: (Array of 2 price levels)
+    - targetProfit: numeric price for the expected profit-taking level
+    - stopLoss: numeric price for the protective risk-control level
+    - keyLevels: Array with exactly 2 strings: "Target Profit: $X.XX" and "Stop Loss: $X.XX"
     
-    Make it feel professional and objective. If the data is random, say HOLD.`;
+    Use BUY when recent price action shows positive momentum, SELL when it shows downside momentum, and HOLD only when signals are genuinely mixed or flat.
+    If the recent history is clearly rising, do not return HOLD; return BUY.
+    If the recent history is clearly falling, do not return HOLD; return SELL.
+    For BUY or HOLD, targetProfit should usually be above current price and stopLoss below current price.
+    For SELL, targetProfit may be below current price and stopLoss above current price.
+    Make it professional, objective, and specific.`;
 
     try {
         const result = await model.generateContent(prompt);
         let text = result.response.text();
         text = text.replace(/```json|```/g, '').trim();
-        res.json(JSON.parse(text));
-    } catch (error) {
+        const parsed = JSON.parse(text);
+        const targetProfit = parsed.targetProfit ?? parsed.keyLevels?.[0];
+        const stopLoss = parsed.stopLoss ?? parsed.keyLevels?.[1];
+
         res.json({
-            verdict: "HOLD",
-            confidence: 50,
-            reasoning: "Market data analysis is currently inconclusive due to volatility. Monitor volume levels.",
-            keyLevels: ["Support: N/A", "Resistance: N/A"]
+            ...parsed,
+            targetProfit,
+            stopLoss,
+            keyLevels: [
+                `Target Profit: ${formatPriceLevel(targetProfit)}`,
+                `Stop Loss: ${formatPriceLevel(stopLoss)}`
+            ]
+        });
+    } catch (error) {
+        console.error("AI Error:", error.message);
+        res.json({
+            verdict: "SYSTEM CALIBRATING",
+            confidence: 0,
+            reasoning: "AI verdict generation is temporarily unavailable. Check the backend terminal for the exact Gemini error before using this signal.",
+            targetProfit: null,
+            stopLoss: null,
+            keyLevels: ["Target Profit: N/A", "Stop Loss: N/A"]
         });
     }
 });
@@ -196,8 +231,8 @@ app.post('/api/vision', async (req, res) => {
         text = text.replace(/```json|```/g, '').trim();
         res.json(JSON.parse(text));
     } catch (error) {
-        console.error("Vision Error:", error);
-        res.status(500).json({ error: "Vision analysis failed. Ensure API key supports multimodal input." });
+        console.error("AI Error:", error.message);
+        res.status(500).json({ error: "Vision analysis failed. Check the backend terminal for the exact Gemini error and confirm the API key supports multimodal input." });
     }
 });
 
@@ -210,7 +245,8 @@ app.post('/api/chat', async (req, res) => {
         const result = await model.generateContent({ contents });
         res.json({ reply: result.response.text() });
     } catch (error) {
-        res.json({ reply: "I'm currently busy analyzing the markets. Please try again in a moment!" });
+        console.error("AI Error:", error.message);
+        res.json({ reply: "AI Advisor is temporarily unavailable. Please check the backend terminal for the exact Gemini error, such as an invalid API key, quota limit, or model access issue." });
     }
 });
 

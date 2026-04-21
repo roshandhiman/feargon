@@ -95,8 +95,8 @@ export async function renderStockDetail(container) {
                </div>
 
                <div style="display: flex; flex-direction: column; gap: 8px;">
-                 <div id="verdict-level-1" style="font-size: 12px; font-weight: 600; padding: 8px; background: rgba(16, 185, 129, 0.1); border-radius: 6px; color: #10b981;"></div>
-                 <div id="verdict-level-2" style="font-size: 12px; font-weight: 600; padding: 8px; background: rgba(239, 68, 68, 0.1); border-radius: 6px; color: #ef4444;"></div>
+                 <div id="verdict-level-1" style="min-height: 48px; display: flex; align-items: center; gap: 10px; font-size: 12px; font-weight: 600; padding: 10px 12px; background: rgba(16, 185, 129, 0.1); border-radius: 6px; color: #10b981;"></div>
+                 <div id="verdict-level-2" style="min-height: 48px; display: flex; align-items: center; gap: 10px; font-size: 12px; font-weight: 600; padding: 10px 12px; background: rgba(239, 68, 68, 0.1); border-radius: 6px; color: #ef4444;"></div>
                </div>
             </div>
           </div>
@@ -118,6 +118,44 @@ export async function renderStockDetail(container) {
   
   const verdictStatus = main.querySelector('#ai-verdict-status');
   const verdictResult = main.querySelector('#ai-verdict-result');
+
+  function escapeHTML(value) {
+    return String(value ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+
+  function parseDisplayedPrice() {
+    const match = priceEl.textContent.match(/-?\$?[\d,]+(?:\.\d+)?/);
+    if (!match) return null;
+    const numericValue = Number(match[0].replace(/[$,]/g, ''));
+    return Number.isFinite(numericValue) ? numericValue : null;
+  }
+
+  function formatLevelValue(value, fallback = 'N/A') {
+    if (value === null || value === undefined || value === '') return fallback;
+    const rawValue = String(value).trim();
+    const withoutLabel = rawValue.replace(/^(target profit|take profit|stop loss|support|resistance)\s*:\s*/i, '').trim();
+    const numericText = withoutLabel.replace(/[^0-9.-]/g, '');
+    if (!numericText) return withoutLabel || fallback;
+    const numericValue = Number(numericText);
+    if (Number.isFinite(numericValue)) return `$${numericValue.toFixed(2)}`;
+    return withoutLabel || fallback;
+  }
+
+  function renderVerdictLevel(el, iconSvg, label, value) {
+    const sizedIcon = iconSvg.replace('<svg ', '<svg style="width:100%;height:100%;" ');
+    el.innerHTML = `
+      <span style="width: 18px; height: 18px; display: inline-flex; flex: 0 0 18px;">${sizedIcon}</span>
+      <span style="display: flex; flex-direction: column; gap: 2px; min-width: 0;">
+        <span style="font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; opacity: 0.78;">${label}</span>
+        <strong style="font-size: 13px; line-height: 1.25; overflow-wrap: anywhere;">${escapeHTML(value)}</strong>
+      </span>
+    `;
+  }
 
   // Load Current Price
   async function fetchPrice() {
@@ -182,7 +220,8 @@ export async function renderStockDetail(container) {
   }
 
   async function runAnalysis(history) {
-    const currentPrice = priceEl.textContent.split(' ')[0];
+    const latestHistoryPrice = Number(history[history.length - 1]);
+    const currentPrice = parseDisplayedPrice() ?? (Number.isFinite(latestHistoryPrice) ? latestHistoryPrice : null);
     const data = await getAIAssetVerdict(symbol, currentPrice, history.slice(-5), assetType);
 
     if (data) {
@@ -190,22 +229,28 @@ export async function renderStockDetail(container) {
       verdictResult.style.display = 'block';
       
       const badge = main.querySelector('#verdict-badge');
-      badge.textContent = data.verdict;
+      const normalizedVerdict = String(data.verdict || 'SYSTEM CALIBRATING').toUpperCase();
+      badge.textContent = normalizedVerdict;
       
       const colors = {
         BUY: { bg: 'rgba(16, 185, 129, 0.2)', text: '#10b981' },
         SELL: { bg: 'rgba(239, 68, 68, 0.2)', text: '#ef4444' },
-        HOLD: { bg: 'rgba(245, 158, 11, 0.2)', text: '#f59e0b' }
+        HOLD: { bg: 'rgba(245, 158, 11, 0.2)', text: '#f59e0b' },
+        'SYSTEM CALIBRATING': { bg: 'rgba(148, 163, 184, 0.2)', text: '#94a3b8' }
       };
       
-      const colorSet = colors[data.verdict] || colors.HOLD;
+      const colorSet = colors[normalizedVerdict] || colors['SYSTEM CALIBRATING'];
       badge.style.background = colorSet.bg;
       badge.style.color = colorSet.text;
       
-      main.querySelector('#verdict-confidence').textContent = `${data.confidence}%`;
+      const confidence = Number(data.confidence);
+      main.querySelector('#verdict-confidence').textContent = `${Number.isFinite(confidence) ? confidence : 0}%`;
       main.querySelector('#verdict-reasoning').textContent = data.reasoning;
-      main.querySelector('#verdict-level-1').textContent = data.keyLevels[0] || '';
-      main.querySelector('#verdict-level-2').textContent = data.keyLevels[1] || '';
+
+      const targetProfit = formatLevelValue(data.targetProfit ?? data.keyLevels?.[0]);
+      const stopLoss = formatLevelValue(data.stopLoss ?? data.keyLevels?.[1]);
+      renderVerdictLevel(main.querySelector('#verdict-level-1'), icons.trendUp, 'Target Profit', targetProfit);
+      renderVerdictLevel(main.querySelector('#verdict-level-2'), icons.trendDown, 'Stop Loss', stopLoss);
     }
   }
 
